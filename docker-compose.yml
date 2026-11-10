@@ -1,16 +1,16 @@
 services:
   db:
-    image: postgres:18-alpine          # hivatalos Postgres 18, kis méretű (Alpine) változat
+    image: postgres:18-alpine          
     container_name: borbely-db
-    environment:                       # a ${...} értékeket a compose a .env fájlból olvassa
+    environment:                       
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"                    # gép:konténer – így a Spring a localhost:5432-n éri el
+      - "5432:5432"                    
     volumes:
-      - pgdata:/var/lib/postgresql     # itt maradnak meg az adatok újraindítás után is (Postgres 18-tól ez az útvonal)
-    healthcheck:                       # a Docker figyeli, hogy az adatbázis már fogad-e kapcsolatot
+      - pgdata:/var/lib/postgresql     
+    healthcheck:                       
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
