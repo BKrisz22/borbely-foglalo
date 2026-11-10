@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <preConditions onFail="HALT">
+        <dbms type="postgresql"/>
+    </preConditions>
+
+    <changeSet id="001-btree-gist" author="krisztian">
+        <sql>CREATE EXTENSION IF NOT EXISTS btree_gist</sql>
+        <rollback>
+            <sql>DROP EXTENSION IF EXISTS btree_gist</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="002-app-user" author="krisztian">
+        <createTable tableName="app_user">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="app_user_pk"/>
+            </column>
+            <column name="email" type="VARCHAR(254)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="app_user_email_uq"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="full_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_notifications" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE app_user ADD CONSTRAINT app_user_email_lowercase CHECK (email = lower(email));
+            ALTER TABLE app_user ADD CONSTRAINT app_user_role_valid CHECK (role IN ('CUSTOMER', 'BARBER', 'OWNER'));
+            ]]></sql>
+        <rollback>
+            <dropTable tableName="app_user"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="003-barber" author="krisztian">
+        <createTable tableName="barber">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="barber_pk"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" unique="true" uniqueConstraintName="barber_user_uq"
+                             foreignKeyName="barber_user_fk"
+                             referencedTableName="app_user" referencedColumnNames="id"/>
+            </column>
+            <column name="bio" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_lead_minutes" type="INTEGER" defaultValueNumeric="60">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE barber ADD CONSTRAINT barber_min_lead_range CHECK (min_lead_minutes BETWEEN 0 AND 1440);
+            ]]></sql>
+        <rollback>
+            <dropTable tableName="barber"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="004-service-offering" author="krisztian">
+        <createTable tableName="service_offering">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="service_offering_pk"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="service_offering_name_uq"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="duration_minutes" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_huf" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE service_offering ADD CONSTRAINT service_offering_duration_range CHECK (duration_minutes > 0 AND duration_minutes <= 480);
+            ALTER TABLE service_offering ADD CONSTRAINT service_offering_price_positive CHECK (price_huf >= 0);
+            ]]></sql>
+        <rollback>
+            <dropTable tableName="service_offering"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="005-barber-service" author="krisztian">
+        <createTable tableName="barber_service">
+            <column name="barber_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="barber_service_pk"
+                             foreignKeyName="barber_service_barber_fk"
+                             referencedTableName="barber" referencedColumnNames="id"/>
+            </column>
+            <column name="service_offering_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="barber_service_pk"
+                             foreignKeyName="barber_service_service_fk"
+                             referencedTableName="service_offering" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+        <createIndex tableName="barber_service" indexName="barber_service_service_idx">
+            <column name="service_offering_id"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="barber_service"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="006-availability" author="krisztian">
+        <createTable tableName="availability">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="availability_pk"/>
+            </column>
+            <column name="barber_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="availability_barber_fk"
+                             referencedTableName="barber" referencedColumnNames="id"/>
+            </column>
+            <column name="work_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE availability ADD CONSTRAINT availability_time_order CHECK (end_time > start_time);
+            ALTER TABLE availability ADD CONSTRAINT availability_start_grid
+                CHECK (extract(minute FROM start_time)::int % 15 = 0 AND extract(second FROM start_time) = 0);
+            ALTER TABLE availability ADD CONSTRAINT availability_end_grid
+                CHECK (extract(minute FROM end_time)::int % 15 = 0 AND extract(second FROM end_time) = 0);
+            ALTER TABLE availability ADD CONSTRAINT availability_no_overlap
+                EXCLUDE USING gist (
+                    barber_id WITH =,
+                    tsrange(work_date + start_time, work_date + end_time, '[)') WITH &&
+                );
+            ]]></sql>
+        <createIndex tableName="availability" indexName="availability_barber_date_idx">
+            <column name="barber_id"/>
+            <column name="work_date"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="availability"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="007-time-off" author="krisztian">
+        <createTable tableName="time_off">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="time_off_pk"/>
+            </column>
+            <column name="barber_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="time_off_barber_fk"
+                             referencedTableName="barber" referencedColumnNames="id"/>
+            </column>
+            <column name="start_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="VARCHAR(200)"/>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE time_off ADD CONSTRAINT time_off_time_order CHECK (end_at > start_at);
+            ]]></sql>
+        <createIndex tableName="time_off" indexName="time_off_barber_start_idx">
+            <column name="barber_id"/>
+            <column name="start_at"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="time_off"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="008-booking" author="krisztian">
+        <createTable tableName="booking">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="booking_pk"/>
+            </column>
+            <column name="barber_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="booking_barber_fk"
+                             referencedTableName="barber" referencedColumnNames="id"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="booking_customer_fk"
+                             referencedTableName="app_user" referencedColumnNames="id"/>
+            </column>
+            <column name="service_offering_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="booking_service_fk"
+                             referencedTableName="service_offering" referencedColumnNames="id"/>
+            </column>
+            <column name="start_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_huf" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="BOOKED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cancelled_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="reminder_sent_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE booking ADD CONSTRAINT booking_price_positive CHECK (price_huf >= 0);
+            ALTER TABLE booking ADD CONSTRAINT booking_status_valid
+                CHECK (status IN ('BOOKED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'));
+            ALTER TABLE booking ADD CONSTRAINT booking_time_order CHECK (end_at > start_at);
+            ALTER TABLE booking ADD CONSTRAINT booking_cancelled_consistency
+                CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL));
+            ALTER TABLE booking ADD CONSTRAINT booking_no_overlap
+                EXCLUDE USING gist (
+                    barber_id WITH =,
+                    tstzrange(start_at, end_at, '[)') WITH &&
+                ) WHERE (status <> 'CANCELLED');
+            CREATE INDEX booking_reminder_due_idx ON booking (start_at)
+                WHERE status = 'BOOKED' AND reminder_sent_at IS NULL;
+            ]]></sql>
+        <createIndex tableName="booking" indexName="booking_barber_start_idx">
+            <column name="barber_id"/>
+            <column name="start_at"/>
+        </createIndex>
+        <createIndex tableName="booking" indexName="booking_customer_start_idx">
+            <column name="customer_id"/>
+            <column name="start_at"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="booking"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="009-invoice" author="krisztian">
+        <createTable tableName="invoice">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="invoice_pk"/>
+            </column>
+            <column name="booking_id" type="BIGINT">
+                <constraints nullable="false" unique="true" uniqueConstraintName="invoice_booking_uq"
+                             foreignKeyName="invoice_booking_fk"
+                             referencedTableName="booking" referencedColumnNames="id"/>
+            </column>
+            <column name="external_number" type="VARCHAR(50)">
+                <constraints unique="true" uniqueConstraintName="invoice_external_number_uq"/>
+            </column>
+            <column name="item_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount_huf" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failure_reason" type="VARCHAR(500)"/>
+            <column name="pdf_url" type="VARCHAR(500)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="issued_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE invoice ADD CONSTRAINT invoice_amount_positive CHECK (amount_huf >= 0);
+            ALTER TABLE invoice ADD CONSTRAINT invoice_status_valid
+                CHECK (status IN ('PENDING', 'ISSUED', 'FAILED'));
+            ALTER TABLE invoice ADD CONSTRAINT invoice_issued_complete
+                CHECK (status <> 'ISSUED' OR (external_number IS NOT NULL AND issued_at IS NOT NULL));
+            ]]></sql>
+        <rollback>
+            <dropTable tableName="invoice"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="010-chat-message" author="krisztian">
+        <createTable tableName="chat_message">
+            <column name="id" type="BIGINT" autoIncrement="true" generationType="ALWAYS">
+                <constraints primaryKey="true" primaryKeyName="chat_message_pk"/>
+            </column>
+            <column name="booking_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="chat_message_booking_fk"
+                             referencedTableName="booking" referencedColumnNames="id"/>
+            </column>
+            <column name="sender_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="chat_message_sender_fk"
+                             referencedTableName="app_user" referencedColumnNames="id"/>
+            </column>
+            <column name="body" type="VARCHAR(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sent_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE chat_message ADD CONSTRAINT chat_message_body_not_blank CHECK (length(trim(body)) > 0);
+            ]]></sql>
+        <createIndex tableName="chat_message" indexName="chat_message_booking_sent_idx">
+            <column name="booking_id"/>
+            <column name="sent_at"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="chat_message"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
