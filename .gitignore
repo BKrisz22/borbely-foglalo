@@ -1,0 +1,10 @@
+# titkok
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# rendszerfájlok
+Thumbs.db
+.DS_Store
