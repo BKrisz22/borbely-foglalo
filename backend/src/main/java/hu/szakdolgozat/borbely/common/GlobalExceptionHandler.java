@@ -1,0 +1,54 @@
+package hu.szakdolgozat.borbely.common;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail handleNotFound(NotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Nem található", ex.getMessage());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    ProblemDetail handleConflict(ConflictException ex) {
+        return problem(HttpStatus.CONFLICT, "Ütközés", ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {
+        return problem(HttpStatus.CONFLICT, "Ütközés", "A művelet ütközik a meglévő adatokkal.");
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.putIfAbsent(error.getField(), error.getDefaultMessage());
+        }
+        ProblemDetail body = problem(HttpStatus.BAD_REQUEST, "Érvénytelen adatok", "Egy vagy több mező hibás.");
+        body.setProperty("errors", errors);
+        return handleExceptionInternal(ex, body, headers, status, request);
+    }
+
+    private static ProblemDetail problem(HttpStatus status, String title, String detail) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
+        problem.setTitle(title);
+        return problem;
+    }
+}
