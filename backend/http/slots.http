@@ -1,0 +1,15 @@
+// Foglalási tölcsér: szabad kezdőpontok és foglalható napok. Bejelentkezés nem kell.
+// Előtte a schedule.http-vel nyiss munkaidőt az 1-es borbélynak; a dátumokat írd át jövőbeli napokra.
+// Csak ma és ma + 30 nap közötti napra kapsz kezdőpontot.
+
+### Szabad kezdőpontok egy napra (200)
+GET http://localhost:8080/api/barbers/1/slots?serviceId=1&date=2026-12-07
+
+### Foglalható napok egy időszakban (200)
+GET http://localhost:8080/api/barbers/1/available-days?serviceId=1&from=2026-12-01&to=2026-12-31
+
+### Olyan szolgáltatás, amit a borbély nem vállal (400)
+GET http://localhost:8080/api/barbers/1/slots?serviceId=99&date=2026-12-07
+
+### Nem létező borbély (404)
+GET http://localhost:8080/api/barbers/99/slots?serviceId=1&date=2026-12-07

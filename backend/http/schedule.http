@@ -1,0 +1,99 @@
+// Beosztás: munkaidő-sávok és távollétek. A barbers.http-vel előbb hozd létre Kovács Pétert (1-es borbély).
+// A dátumokat írd át jövőbeli napokra; a múltba nem lehet munkaidőt nyitni.
+
+### Borbélyként belépés a kezdőjelszóval (200)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "kovacs.peter@example.com",
+  "password": "Kezdo1234"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### Munkaidő-sávok felvétele egyszerre (201): vagy mind bekerül, vagy egyik sem
+POST http://localhost:8080/api/barbers/1/availability
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "slots": [
+    { "workDate": "2026-12-07", "startTime": "09:00", "endTime": "12:00" },
+    { "workDate": "2026-12-07", "startTime": "14:00", "endTime": "18:00" },
+    { "workDate": "2026-12-09", "startTime": "10:00", "endTime": "16:00" }
+  ]
+}
+
+### Egy hét sávjai (200)
+GET http://localhost:8080/api/barbers/1/availability?from=2026-12-07&to=2026-12-13
+Authorization: Bearer {{token}}
+
+### Átfedő sáv (409)
+POST http://localhost:8080/api/barbers/1/availability
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "slots": [
+    { "workDate": "2026-12-07", "startTime": "11:00", "endTime": "13:00" }
+  ]
+}
+
+### Nem negyedórás időpont (400)
+POST http://localhost:8080/api/barbers/1/availability
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "slots": [
+    { "workDate": "2026-12-08", "startTime": "09:10", "endTime": "12:00" }
+  ]
+}
+
+### Előző hét másolása a következő hétre (201); mindkét dátum hétfő
+POST http://localhost:8080/api/barbers/1/availability/copy-week
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sourceWeekStart": "2026-12-07",
+  "targetWeekStart": "2026-12-14"
+}
+
+### Sáv módosítása (200)
+PUT http://localhost:8080/api/barbers/1/availability/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "startTime": "08:00",
+  "endTime": "12:00"
+}
+
+### Sáv törlése (204; 409, ha foglalás esik bele)
+DELETE http://localhost:8080/api/barbers/1/availability/2
+Authorization: Bearer {{token}}
+
+### Másik borbély beosztása (403)
+GET http://localhost:8080/api/barbers/2/availability?from=2026-12-07&to=2026-12-13
+Authorization: Bearer {{token}}
+
+### Távollét felvétele (201); az időpont időzónával megy
+POST http://localhost:8080/api/barbers/1/time-off
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "startAt": "2026-12-09T12:00:00+01:00",
+  "endAt": "2026-12-09T13:00:00+01:00",
+  "reason": "Orvosi vizsgálat"
+}
+
+### Távollétek két nap között (200)
+GET http://localhost:8080/api/barbers/1/time-off?from=2026-12-07&to=2026-12-13
+Authorization: Bearer {{token}}
+
+### Távollét törlése (204)
+DELETE http://localhost:8080/api/barbers/1/time-off/1
+Authorization: Bearer {{token}}

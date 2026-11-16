@@ -53,6 +53,9 @@ public class SecurityConfig {
                         // A hibaoldal szabad, különben egy 400-as vagy 404-es hiba is 401-nek látszana.
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        // A beosztás nem nyilvános: borbély vagy tulajdonos érheti el; hogy kiét, azt a ScheduleAccess dönti el.
+                        .requestMatchers("/api/barbers/*/availability/**", "/api/barbers/*/time-off/**")
+                        .hasAnyRole("BARBER", "OWNER")
                         // A foglalási tölcsér belépés nélkül is böngészhető.
                         .requestMatchers(HttpMethod.GET, "/api/services/**", "/api/barbers/**").permitAll()
                         .requestMatchers("/api/services/**", "/api/barbers/**").hasRole("OWNER")

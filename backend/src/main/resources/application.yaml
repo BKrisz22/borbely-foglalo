@@ -23,3 +23,6 @@ app:
     password: ${OWNER_PASSWORD:}
   cors:
     allowed-origins: http://localhost:4200
+  schedule:
+    zone: Europe/Budapest
+    booking-horizon-days: 30
