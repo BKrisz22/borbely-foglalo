@@ -11,6 +11,7 @@ import hu.szakdolgozat.borbely.serviceoffering.ServiceOfferingRepository;
 import hu.szakdolgozat.borbely.user.AppUser;
 import hu.szakdolgozat.borbely.user.AppUserRepository;
 import hu.szakdolgozat.borbely.user.Role;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,21 +30,18 @@ import java.util.TreeSet;
 public class BarberService {
 
     private static final Locale HUNGARIAN = Locale.of("hu", "HU");
-    /**
-     * Jelszó nélküli fiók jelölése: nem érvényes BCrypt-hash,
-     * ezért ezzel a fiókkal nem lehet belépni.
-     */
-    private static final String NO_PASSWORD = "!";
 
     private final BarberRepository barbers;
     private final AppUserRepository users;
     private final ServiceOfferingRepository serviceOfferings;
+    private final PasswordEncoder passwordEncoder;
 
     public BarberService(BarberRepository barbers, AppUserRepository users,
-                         ServiceOfferingRepository serviceOfferings) {
+                         ServiceOfferingRepository serviceOfferings, PasswordEncoder passwordEncoder) {
         this.barbers = barbers;
         this.users = users;
         this.serviceOfferings = serviceOfferings;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -76,7 +74,11 @@ public class BarberService {
                 ? List.of()
                 : loadServices(request.serviceIds());
 
-        AppUser user = users.save(new AppUser(email, NO_PASSWORD, request.fullName().trim(), Role.BARBER));
+        // A kezdőjelszót a tulajdonos adja meg; a borbélynak az első belépés után le kell cserélnie.
+        AppUser newUser = new AppUser(email, passwordEncoder.encode(request.initialPassword()),
+                request.fullName().trim(), Role.BARBER);
+        newUser.setMustChangePassword(true);
+        AppUser user = users.save(newUser);
 
         Barber barber = new Barber(user, blankToNull(request.bio()));
         if (request.minLeadMinutes() != null) {

@@ -36,6 +36,13 @@ public class AppUser {
     @Column(name = "email_notifications", nullable = false)
     private boolean emailNotifications = true;
 
+    /**
+     * Igaz, ha a felhasználónak a következő belépés után le kell cserélnie a jelszavát
+     * (például a tulajdonostól kapott kezdőjelszót).
+     */
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -108,6 +115,14 @@ public class AppUser {
 
     public void setEmailNotifications(boolean emailNotifications) {
         this.emailNotifications = emailNotifications;
+    }
+
+    public boolean isMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
     }
 
     public Instant getCreatedAt() {

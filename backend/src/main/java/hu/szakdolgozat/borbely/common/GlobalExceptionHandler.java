@@ -32,6 +32,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "Nem található", ex.getMessage());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    ProblemDetail handleBadRequest(BadRequestException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Hibás kérés", ex.getMessage());
+    }
+
     @ExceptionHandler(ConflictException.class)
     ProblemDetail handleConflict(ConflictException ex) {
         return problem(HttpStatus.CONFLICT, "Ütközés", ex.getMessage());

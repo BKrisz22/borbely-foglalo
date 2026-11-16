@@ -47,7 +47,7 @@ class BarberApiTests {
         mockMvc.perform(post("/api/barbers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "Kovacs.Peter@Example.com", "fullName": "Kovács Péter", "serviceIds": [1, 2]}
+                                {"email": "Kovacs.Peter@Example.com", "fullName": "Kovács Péter", "initialPassword": "Kezdo1234", "serviceIds": [1, 2]}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/barbers/1"))
@@ -134,7 +134,7 @@ class BarberApiTests {
         mockMvc.perform(post("/api/barbers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "KOVACS.PETER@example.com", "fullName": "Másik Péter"}
+                                {"email": "KOVACS.PETER@example.com", "fullName": "Másik Péter", "initialPassword": "Kezdo1234"}
                                 """))
                 .andExpect(status().isConflict());
     }
@@ -167,6 +167,7 @@ class BarberApiTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.email").exists())
                 .andExpect(jsonPath("$.errors.fullName").exists())
+                .andExpect(jsonPath("$.errors.initialPassword").exists())
                 .andExpect(jsonPath("$.errors.minLeadMinutes").exists());
     }
 
@@ -189,7 +190,7 @@ class BarberApiTests {
         mockMvc.perform(post("/api/barbers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "%s", "fullName": "%s", "serviceIds": %s}
+                                {"email": "%s", "fullName": "%s", "initialPassword": "Kezdo1234", "serviceIds": %s}
                                 """.formatted(email, fullName, serviceIds)))
                 .andExpect(status().isCreated());
     }

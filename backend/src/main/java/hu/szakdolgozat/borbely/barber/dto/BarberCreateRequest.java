@@ -1,5 +1,6 @@
 package hu.szakdolgozat.borbely.barber.dto;
 
+import hu.szakdolgozat.borbely.common.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,6 +13,7 @@ import java.util.Set;
 /**
  * Új borbély létrehozásának kérése ({@code POST /api/barbers}).
  * A szolgáltatások listája elhagyható.
+ * A kezdőjelszót a tulajdonos adja meg; a borbélynak az első belépés után le kell cserélnie.
  */
 public record BarberCreateRequest(
         @NotBlank(message = "Az e-mail-cím megadása kötelező.")
@@ -22,6 +24,9 @@ public record BarberCreateRequest(
         @NotBlank(message = "A név megadása kötelező.")
         @Size(max = 100, message = "A név legfeljebb 100 karakter lehet.")
         String fullName,
+
+        @StrongPassword
+        String initialPassword,
 
         @Size(max = 500, message = "A bemutatkozás legfeljebb 500 karakter lehet.")
         String bio,

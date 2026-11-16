@@ -1,0 +1,66 @@
+### Regisztráció (201): a válasz már tokent is ad, ezt a szkript elmenti
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "vendeg.vilma@example.com",
+  "fullName": "Vendég Vilma",
+  "password": "Titkos123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### Belépés (200)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "vendeg.vilma@example.com",
+  "password": "Titkos123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### Saját adatok (a fenti token kell)
+GET http://localhost:8080/api/auth/me
+Authorization: Bearer {{token}}
+
+### Vendégként szolgáltatás létrehozása (403)
+POST http://localhost:8080/api/services
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Próba",
+  "durationMinutes": 30,
+  "priceHuf": 5000
+}
+
+### Hibás jelszó (401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "vendeg.vilma@example.com",
+  "password": "Rossz12345"
+}
+
+### Gyenge jelszó regisztrációnál (400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "masik@example.com",
+  "fullName": "Másik Vendég",
+  "password": "csakbetuk"
+}
+
+### Jelszócsere (204); utána a régi jelszóval már nem lehet belépni
+PUT http://localhost:8080/api/auth/password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Titkos123",
+  "newPassword": "UjJelszo456"
+}

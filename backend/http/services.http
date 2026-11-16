@@ -1,3 +1,5 @@
+// A módosító kérésekhez tulajdonosi token kell: lépj be tulajdonosként az auth.http-vel.
+
 ### Aktív szolgáltatások
 GET http://localhost:8080/api/services
 
@@ -6,6 +8,7 @@ GET http://localhost:8080/api/services?includeInactive=true
 
 ### Új szolgáltatás (201)
 POST http://localhost:8080/api/services
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -17,6 +20,7 @@ Content-Type: application/json
 
 ### Második szolgáltatás (201)
 POST http://localhost:8080/api/services
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -30,6 +34,7 @@ GET http://localhost:8080/api/services/1
 
 ### Módosítás
 PUT http://localhost:8080/api/services/1
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -41,9 +46,11 @@ Content-Type: application/json
 
 ### Kikapcsolás (204)
 DELETE http://localhost:8080/api/services/2
+Authorization: Bearer {{token}}
 
 ### Visszakapcsolás
 PUT http://localhost:8080/api/services/2
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -55,6 +62,7 @@ Content-Type: application/json
 
 ### Hibás adatok (400)
 POST http://localhost:8080/api/services
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -65,6 +73,7 @@ Content-Type: application/json
 
 ### Már létező név (409)
 POST http://localhost:8080/api/services
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {

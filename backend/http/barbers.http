@@ -1,10 +1,14 @@
+// A módosító kérésekhez tulajdonosi token kell: lépj be tulajdonosként az auth.http-vel.
+
 ### Új borbély, két szolgáltatással (201)
 POST http://localhost:8080/api/barbers
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "email": "Kovacs.Peter@example.com",
   "fullName": "Kovács Péter",
+  "initialPassword": "Kezdo1234",
   "bio": "Tíz éve borbély, a klasszikus vágások specialistája.",
   "minLeadMinutes": 60,
   "serviceIds": [1, 2]
@@ -12,11 +16,13 @@ Content-Type: application/json
 
 ### Második borbély, egy szolgáltatással (201)
 POST http://localhost:8080/api/barbers
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "email": "szabo.anna@example.com",
   "fullName": "Szabó Anna",
+  "initialPassword": "Kezdo1234",
   "serviceIds": [1]
 }
 
@@ -31,6 +37,7 @@ GET http://localhost:8080/api/barbers/1
 
 ### Módosítás
 PUT http://localhost:8080/api/barbers/1
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -41,6 +48,7 @@ Content-Type: application/json
 
 ### Szolgáltatások cseréje
 PUT http://localhost:8080/api/barbers/2/services
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -49,21 +57,25 @@ Content-Type: application/json
 
 ### Kikapcsolás (204)
 DELETE http://localhost:8080/api/barbers/2
+Authorization: Bearer {{token}}
 
 ### Mindenki, a kikapcsoltakkal együtt
 GET http://localhost:8080/api/barbers?includeInactive=true
 
 ### Már létező e-mail-cím (409)
 POST http://localhost:8080/api/barbers
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "email": "kovacs.peter@example.com",
-  "fullName": "Másik Péter"
+  "fullName": "Másik Péter",
+  "initialPassword": "Kezdo1234"
 }
 
 ### Hibás adatok (400)
 POST http://localhost:8080/api/barbers
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -74,6 +86,7 @@ Content-Type: application/json
 
 ### Nem létező szolgáltatás (404)
 PUT http://localhost:8080/api/barbers/1/services
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
