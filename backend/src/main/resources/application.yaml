@@ -13,3 +13,13 @@ spring:
       ddl-auto: validate
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
+app:
+  jwt:
+    secret: ${JWT_SECRET:}
+    issuer: borbely
+    ttl: PT1H
+  owner:
+    email: ${OWNER_EMAIL:}
+    password: ${OWNER_PASSWORD:}
+  cors:
+    allowed-origins: http://localhost:4200
