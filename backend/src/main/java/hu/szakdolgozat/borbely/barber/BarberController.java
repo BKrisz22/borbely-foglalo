@@ -4,9 +4,13 @@ import hu.szakdolgozat.borbely.barber.dto.BarberCreateRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberServicesRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberUpdateRequest;
+import hu.szakdolgozat.borbely.barber.dto.BarberView;
+import hu.szakdolgozat.borbely.security.Authentications;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -26,16 +30,28 @@ public class BarberController {
         this.barbers = barbers;
     }
 
+    /**
+     * Borbélylista. A tulajdonos a teljes adatokat kapja (e-mail-címmel, kérésre a kikapcsoltakkal is),
+     * mindenki más csak az aktív borbélyok nyilvános adatait. Bejelentkezés nélkül az authentication null.
+     */
     @GetMapping
-    public List<BarberResponse> list(
+    public List<? extends BarberView> list(
             @RequestParam(name = "serviceId", required = false) Long serviceId,
-            @RequestParam(name = "includeInactive", defaultValue = "false") boolean includeInactive) {
-        return barbers.list(serviceId, includeInactive);
+            @RequestParam(name = "includeInactive", defaultValue = "false") boolean includeInactive,
+            Authentication authentication) {
+        if (Authentications.isOwner(authentication)) {
+            return barbers.list(serviceId, includeInactive);
+        }
+        if (includeInactive) {
+            throw new AccessDeniedException("A kikapcsolt borbélyokat csak a tulajdonos láthatja.");
+        }
+        return barbers.listPublic(serviceId);
     }
 
+    /** Egy borbély: a tulajdonosnak a teljes adatok, másnak csak az aktív borbély nyilvános adatai. */
     @GetMapping("/{id}")
-    public BarberResponse get(@PathVariable("id") Long id) {
-        return barbers.get(id);
+    public BarberView get(@PathVariable("id") Long id, Authentication authentication) {
+        return Authentications.isOwner(authentication) ? barbers.get(id) : barbers.getPublic(id);
     }
 
     @PostMapping

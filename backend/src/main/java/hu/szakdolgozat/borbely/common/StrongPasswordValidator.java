@@ -27,7 +27,7 @@ public class StrongPasswordValidator implements ConstraintValidator<StrongPasswo
     }
 
     /** A jelszó első hibájának leírása, vagy {@code null}, ha a jelszó megfelel a szabálynak. */
-    static String problem(String value) {
+    public static String problem(String value) {
         if (value == null || value.isBlank()) {
             return "A jelszó megadása kötelező.";
         }

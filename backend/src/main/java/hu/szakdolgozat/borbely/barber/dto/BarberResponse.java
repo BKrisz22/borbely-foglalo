@@ -18,7 +18,7 @@ public record BarberResponse(
         boolean active,
         int minLeadMinutes,
         List<ServiceOfferingResponse> services
-) {
+) implements BarberView {
 
     public static BarberResponse from(Barber barber) {
         AppUser user = barber.getUser();

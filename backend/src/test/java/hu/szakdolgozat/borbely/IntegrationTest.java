@@ -12,10 +12,15 @@ import java.lang.annotation.Target;
 /**
  * Az integrációs tesztek közös annotációja: teljes Spring-környezet, {@code MockMvc}
  * és Testcontainersben futó PostgreSQL.
+ * A tesztek fix JWT-kulccsal és tulajdonosi fiók nélkül futnak, így nem függnek a {@code .env} fájltól.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest
+@SpringBootTest(properties = {
+        "app.jwt.secret=dGVzenQtand0LWt1bGNzLWxlZ2FsYWJiLTMyLWJhanQtaG9zc3p1",
+        "app.owner.email=",
+        "app.owner.password="
+})
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 public @interface IntegrationTest {

@@ -1,6 +1,7 @@
 package hu.szakdolgozat.borbely.barber;
 
 import hu.szakdolgozat.borbely.barber.dto.BarberCreateRequest;
+import hu.szakdolgozat.borbely.barber.dto.BarberPublicResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberServicesRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberUpdateRequest;
@@ -51,12 +52,25 @@ public class BarberService {
     @Transactional(readOnly = true)
     public List<BarberResponse> list(Long serviceId, boolean includeInactive) {
         List<Barber> result = includeInactive ? barbers.findAll() : barbers.findAllByActiveTrue();
-        Collator collator = Collator.getInstance(HUNGARIAN);
-        return result.stream()
-                .filter(barber -> serviceId == null || offers(barber, serviceId))
-                .sorted(Comparator.comparing((Barber barber) -> barber.getUser().getFullName(), collator))
-                .map(BarberResponse::from)
+        return filterAndSort(result, serviceId).stream().map(BarberResponse::from).toList();
+    }
+
+    /** Nyilvános lista: csak az aktív borbélyok, e-mail-cím nélkül, magyar névsorban. */
+    @Transactional(readOnly = true)
+    public List<BarberPublicResponse> listPublic(Long serviceId) {
+        return filterAndSort(barbers.findAllByActiveTrue(), serviceId).stream()
+                .map(BarberPublicResponse::from)
                 .toList();
+    }
+
+    /** Egy aktív borbély nyilvános adatai; kikapcsolt borbélynál 404, mintha nem is létezne. */
+    @Transactional(readOnly = true)
+    public BarberPublicResponse getPublic(Long id) {
+        Barber barber = find(id);
+        if (!barber.isActive()) {
+            throw new NotFoundException("Nincs ilyen borbély: " + id);
+        }
+        return BarberPublicResponse.from(barber);
     }
 
     @Transactional(readOnly = true)
@@ -112,6 +126,15 @@ public class BarberService {
     @Transactional
     public void deactivate(Long id) {
         find(id).setActive(false);
+    }
+
+    /** Szolgáltatás szerinti szűrés, majd névsor a magyar ábécé szerint ({@link Collator}). */
+    private static List<Barber> filterAndSort(List<Barber> candidates, Long serviceId) {
+        Collator collator = Collator.getInstance(HUNGARIAN);
+        return candidates.stream()
+                .filter(barber -> serviceId == null || offers(barber, serviceId))
+                .sorted(Comparator.comparing((Barber barber) -> barber.getUser().getFullName(), collator))
+                .toList();
     }
 
     private Barber find(Long id) {
