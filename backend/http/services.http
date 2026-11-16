@@ -1,0 +1,77 @@
+### Aktív szolgáltatások
+GET http://localhost:8080/api/services
+
+### Minden szolgáltatás, a kikapcsoltakkal együtt
+GET http://localhost:8080/api/services?includeInactive=true
+
+### Új szolgáltatás (201)
+POST http://localhost:8080/api/services
+Content-Type: application/json
+
+{
+  "name": "Hajvágás",
+  "description": "Klasszikus férfi hajvágás mosással",
+  "durationMinutes": 30,
+  "priceHuf": 6000
+}
+
+### Második szolgáltatás (201)
+POST http://localhost:8080/api/services
+Content-Type: application/json
+
+{
+  "name": "Szakálligazítás",
+  "durationMinutes": 20,
+  "priceHuf": 4000
+}
+
+### Egy szolgáltatás
+GET http://localhost:8080/api/services/1
+
+### Módosítás
+PUT http://localhost:8080/api/services/1
+Content-Type: application/json
+
+{
+  "name": "Hajvágás",
+  "description": "Klasszikus férfi hajvágás mosással és szárítással",
+  "durationMinutes": 40,
+  "priceHuf": 6500
+}
+
+### Kikapcsolás (204)
+DELETE http://localhost:8080/api/services/2
+
+### Visszakapcsolás
+PUT http://localhost:8080/api/services/2
+Content-Type: application/json
+
+{
+  "name": "Szakálligazítás",
+  "durationMinutes": 20,
+  "priceHuf": 4000,
+  "active": true
+}
+
+### Hibás adatok (400)
+POST http://localhost:8080/api/services
+Content-Type: application/json
+
+{
+  "name": "",
+  "durationMinutes": 0,
+  "priceHuf": -100
+}
+
+### Már létező név (409)
+POST http://localhost:8080/api/services
+Content-Type: application/json
+
+{
+  "name": "hajvágás",
+  "durationMinutes": 30,
+  "priceHuf": 6000
+}
+
+### Nem létező szolgáltatás (404)
+GET http://localhost:8080/api/services/999

@@ -1,0 +1,84 @@
+### Új borbély, két szolgáltatással (201)
+POST http://localhost:8080/api/barbers
+Content-Type: application/json
+
+{
+  "email": "Kovacs.Peter@example.com",
+  "fullName": "Kovács Péter",
+  "bio": "Tíz éve borbély, a klasszikus vágások specialistája.",
+  "minLeadMinutes": 60,
+  "serviceIds": [1, 2]
+}
+
+### Második borbély, egy szolgáltatással (201)
+POST http://localhost:8080/api/barbers
+Content-Type: application/json
+
+{
+  "email": "szabo.anna@example.com",
+  "fullName": "Szabó Anna",
+  "serviceIds": [1]
+}
+
+### Aktív borbélyok, névsorban
+GET http://localhost:8080/api/barbers
+
+### Akik a 2-es szolgáltatást vállalják
+GET http://localhost:8080/api/barbers?serviceId=2
+
+### Egy borbély
+GET http://localhost:8080/api/barbers/1
+
+### Módosítás
+PUT http://localhost:8080/api/barbers/1
+Content-Type: application/json
+
+{
+  "fullName": "Kovács Péter",
+  "bio": "Tíz éve borbély, a klasszikus vágások és a szakállformázás specialistája.",
+  "minLeadMinutes": 120
+}
+
+### Szolgáltatások cseréje
+PUT http://localhost:8080/api/barbers/2/services
+Content-Type: application/json
+
+{
+  "serviceIds": [1, 2]
+}
+
+### Kikapcsolás (204)
+DELETE http://localhost:8080/api/barbers/2
+
+### Mindenki, a kikapcsoltakkal együtt
+GET http://localhost:8080/api/barbers?includeInactive=true
+
+### Már létező e-mail-cím (409)
+POST http://localhost:8080/api/barbers
+Content-Type: application/json
+
+{
+  "email": "kovacs.peter@example.com",
+  "fullName": "Másik Péter"
+}
+
+### Hibás adatok (400)
+POST http://localhost:8080/api/barbers
+Content-Type: application/json
+
+{
+  "email": "nem-email",
+  "fullName": "",
+  "minLeadMinutes": -5
+}
+
+### Nem létező szolgáltatás (404)
+PUT http://localhost:8080/api/barbers/1/services
+Content-Type: application/json
+
+{
+  "serviceIds": [1, 999]
+}
+
+### Nem létező borbély (404)
+GET http://localhost:8080/api/barbers/999
