@@ -8,6 +8,11 @@ import jakarta.persistence.*;
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * Időpontfoglalás: melyik vendég, melyik borbélynál, melyik szolgáltatásra, mettől meddig.
+ * Az egymást átfedő foglalásokat az adatbázis kizárási megkötése ({@code booking_no_overlap})
+ * akadályozza meg; a lemondott foglalások ebből kimaradnak.
+ */
 @Entity
 @Table(name = "booking")
 public class Booking {
@@ -53,6 +58,10 @@ public class Booking {
     protected Booking() {
     }
 
+    /**
+     * A befejezési időt és az árat a foglaláskor rögzíti a szolgáltatásból, így annak későbbi
+     * módosítása nem írja át a meglévő foglalásokat.
+     */
     public Booking(Barber barber, AppUser customer, ServiceOffering serviceOffering, Instant startAt) {
         this.barber = barber;
         this.customer = customer;
@@ -87,6 +96,7 @@ public class Booking {
         reminderSentAt = Instant.now();
     }
 
+    /** Csak élő ({@code BOOKED}) foglalás állapota változtatható; a lezártaké már nem. */
     private void requireBooked() {
         if (status != BookingStatus.BOOKED) {
             throw new IllegalStateException("A foglalás már le van zárva: " + status);

@@ -6,6 +6,11 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+/**
+ * A borbély munkaideje egy adott napon, helyi idő szerint. A kezdés és a befejezés
+ * 15 perces rácsra esik, és egy borbély munkaidő-sávjai nem fedhetik egymást;
+ * ezt az adatbázis megkötései biztosítják.
+ */
 @Entity
 @Table(name = "availability")
 public class Availability {

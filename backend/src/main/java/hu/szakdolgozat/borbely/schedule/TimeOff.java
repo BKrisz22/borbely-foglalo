@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
+/**
+ * A borbély szünete vagy távolléte két időpont között (például ebédszünet vagy szabadság).
+ * Ebben az időszakban nem foglalható.
+ */
 @Entity
 @Table(name = "time_off")
 public class TimeOff {

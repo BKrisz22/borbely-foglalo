@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * A borbélyok REST-végpontjai ({@code /api/barbers}): listázás szolgáltatás szerinti
+ * szűréssel, lekérdezés, létrehozás, módosítás, a szolgáltatások cseréje és kikapcsolás.
+ */
 @RestController
 @RequestMapping("/api/barbers")
 public class BarberController {
@@ -51,6 +55,10 @@ public class BarberController {
         return barbers.replaceServices(id, request);
     }
 
+    /**
+     * Nem töröl: csak kikapcsolja a borbélyt,
+     * hogy a korábbi foglalásai és adatai megmaradjanak.
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deactivate(@PathVariable("id") Long id) {

@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
+/**
+ * Egy foglaláshoz tartozó számla. A számlázó szolgáltatástól kapott számlaszámot és
+ * PDF-linket tárolja, sikertelen kiállításnál pedig a hiba okát.
+ */
 @Entity
 @Table(name = "invoice")
 public class Invoice {
@@ -56,6 +60,7 @@ public class Invoice {
         createdAt = Instant.now();
     }
 
+    /** Sikeres kiállítás: eltárolja a számlázótól kapott számlaszámot és PDF-linket. */
     public void markIssued(String externalNumber, String pdfUrl) {
         this.status = InvoiceStatus.ISSUED;
         this.externalNumber = externalNumber;
@@ -64,6 +69,7 @@ public class Invoice {
         this.failureReason = null;
     }
 
+    /** Sikertelen kiállítás: eltárolja a hiba okát. */
     public void markFailed(String failureReason) {
         this.status = InvoiceStatus.FAILED;
         this.failureReason = failureReason;

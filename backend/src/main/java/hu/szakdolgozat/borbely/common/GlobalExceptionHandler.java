@@ -16,6 +16,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Egységes hibakezelés: minden hibát RFC 9457 szerinti {@code ProblemDetail}
+ * JSON-ként, magyar üzenettel ad vissza.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -29,11 +33,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.CONFLICT, "Ütközés", ex.getMessage());
     }
 
+    /**
+     * Adatbázis-megkötés megsértése (például egyedi mező vagy átfedő foglalás).
+     * A részleteket nem adja ki a kliensnek.
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {
         return problem(HttpStatus.CONFLICT, "Ütközés", "A művelet ütközik a meglévő adatokkal.");
     }
 
+    /** Validációs hibák: mezőnként az első hibaüzenet kerül az {@code errors} tulajdonságba. */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {

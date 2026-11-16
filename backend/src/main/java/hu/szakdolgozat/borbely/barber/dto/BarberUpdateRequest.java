@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Borbély adatainak módosítása ({@code PUT /api/barbers/{id}}).
+ * Az {@code active} mező elhagyható; ha nincs megadva, nem változik.
+ */
 public record BarberUpdateRequest(
         @NotBlank(message = "A név megadása kötelező.")
         @Size(max = 100, message = "A név legfeljebb 100 karakter lehet.")

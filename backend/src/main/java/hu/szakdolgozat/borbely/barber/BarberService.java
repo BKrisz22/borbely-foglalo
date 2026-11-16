@@ -21,10 +21,18 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * A borbélyok üzleti logikája. Új borbély létrehozásakor a hozzá tartozó
+ * {@code BARBER} szerepkörű felhasználói fiók is létrejön.
+ */
 @Service
 public class BarberService {
 
     private static final Locale HUNGARIAN = Locale.of("hu", "HU");
+    /**
+     * Jelszó nélküli fiók jelölése: nem érvényes BCrypt-hash,
+     * ezért ezzel a fiókkal nem lehet belépni.
+     */
     private static final String NO_PASSWORD = "!";
 
     private final BarberRepository barbers;
@@ -38,6 +46,10 @@ public class BarberService {
         this.serviceOfferings = serviceOfferings;
     }
 
+    /**
+     * A borbélyokat név szerint, a magyar ábécé szabályai szerint rendezi ({@link Collator}),
+     * így az ékezetes betűk is a helyükre kerülnek.
+     */
     @Transactional(readOnly = true)
     public List<BarberResponse> list(Long serviceId, boolean includeInactive) {
         List<Barber> result = includeInactive ? barbers.findAll() : barbers.findAllByActiveTrue();

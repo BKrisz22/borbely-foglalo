@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * A szolgáltatások REST-végpontjai ({@code /api/services}):
+ * listázás, lekérdezés, létrehozás, módosítás és kikapcsolás.
+ */
 @RestController
 @RequestMapping("/api/services")
 public class ServiceOfferingController {
@@ -43,6 +47,10 @@ public class ServiceOfferingController {
         return serviceOfferings.update(id, request);
     }
 
+    /**
+     * Nem töröl: csak kikapcsolja a szolgáltatást,
+     * hogy a korábbi foglalások hivatkozása megmaradjon.
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deactivate(@PathVariable("id") Long id) {

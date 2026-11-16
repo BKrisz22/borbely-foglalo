@@ -8,6 +8,7 @@ import hu.szakdolgozat.borbely.user.AppUser;
 import java.util.Comparator;
 import java.util.List;
 
+/** A borbély adatai az API válaszaiban; a szolgáltatásai név szerint rendezve. */
 public record BarberResponse(
         Long id,
         Long userId,

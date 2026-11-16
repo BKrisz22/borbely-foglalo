@@ -9,6 +9,10 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
+/**
+ * Új borbély létrehozásának kérése ({@code POST /api/barbers}).
+ * A szolgáltatások listája elhagyható.
+ */
 public record BarberCreateRequest(
         @NotBlank(message = "Az e-mail-cím megadása kötelező.")
         @Email(message = "Érvénytelen e-mail-cím.")

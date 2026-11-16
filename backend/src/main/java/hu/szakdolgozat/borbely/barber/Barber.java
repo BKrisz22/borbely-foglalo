@@ -8,6 +8,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Borbély: egy {@code BARBER} szerepkörű felhasználóhoz tartozó szakmai profil
+ * (bemutatkozás, aktív-e, minimális foglalási előidő) és az általa nyújtott szolgáltatások.
+ */
 @Entity
 @Table(name = "barber")
 public class Barber {
@@ -26,6 +30,7 @@ public class Barber {
     @Column(nullable = false)
     private boolean active = true;
 
+    /** Legalább ennyi perccel előre lehet időpontot foglalni ehhez a borbélyhoz. */
     @Column(name = "min_lead_minutes", nullable = false)
     private int minLeadMinutes = 60;
 

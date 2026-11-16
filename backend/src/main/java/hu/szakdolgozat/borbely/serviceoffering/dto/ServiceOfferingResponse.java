@@ -2,6 +2,7 @@ package hu.szakdolgozat.borbely.serviceoffering.dto;
 
 import hu.szakdolgozat.borbely.serviceoffering.ServiceOffering;
 
+/** A szolgáltatás adatai az API válaszaiban. */
 public record ServiceOfferingResponse(
         Long id,
         String name,

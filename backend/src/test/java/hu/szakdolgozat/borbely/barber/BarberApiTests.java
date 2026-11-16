@@ -18,6 +18,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * A borbély-végpontok integrációs tesztjei valódi PostgreSQL-adatbázissal.
+ * Minden teszt üres adatbázisból indul.
+ */
 @IntegrationTest
 class BarberApiTests {
 

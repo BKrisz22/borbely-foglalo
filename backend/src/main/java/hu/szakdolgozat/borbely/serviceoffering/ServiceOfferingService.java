@@ -9,6 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * A szolgáltatások üzleti logikája: létrehozás, módosítás és kikapcsolás,
+ * a név egyediségének ellenőrzésével.
+ */
 @Service
 public class ServiceOfferingService {
 

@@ -7,6 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Szolgáltatás létrehozásának vagy módosításának kérése
+ * ({@code POST} és {@code PUT /api/services}).
+ */
 public record ServiceOfferingRequest(
         @NotBlank(message = "A név megadása kötelező.")
         @Size(max = 100, message = "A név legfeljebb 100 karakter lehet.")

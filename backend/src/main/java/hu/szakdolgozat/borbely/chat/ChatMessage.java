@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
+/** Egy foglaláshoz tartozó csevegőüzenet a vendég és a borbély között. */
 @Entity
 @Table(name = "chat_message")
 public class ChatMessage {

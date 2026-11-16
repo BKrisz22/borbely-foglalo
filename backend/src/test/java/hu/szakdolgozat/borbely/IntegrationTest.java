@@ -9,6 +9,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Az integrációs tesztek közös annotációja: teljes Spring-környezet, {@code MockMvc}
+ * és Testcontainersben futó PostgreSQL.
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest

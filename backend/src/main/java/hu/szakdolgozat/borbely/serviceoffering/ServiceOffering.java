@@ -2,6 +2,10 @@ package hu.szakdolgozat.borbely.serviceoffering;
 
 import jakarta.persistence.*;
 
+/**
+ * Az üzlet által kínált szolgáltatás (például hajvágás) névvel, időtartammal és árral.
+ * Törlés helyett kikapcsolható, hogy a korábbi foglalások hivatkozása megmaradjon.
+ */
 @Entity
 @Table(name = "service_offering")
 public class ServiceOffering {

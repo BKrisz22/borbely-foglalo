@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Locale;
 
+/**
+ * Az alkalmazás felhasználója: vendég, borbély vagy tulajdonos. Az e-mail-címet mindig
+ * kisbetűsen tárolja, így az egyediség kis- és nagybetűtől független.
+ */
 @Entity
 @Table(name = "app_user")
 public class AppUser {
@@ -45,6 +49,10 @@ public class AppUser {
         this.role = role;
     }
 
+    /**
+     * Az e-mail-címet kisbetűsre alakítja és levágja a szélső szóközöket,
+     * hogy az egyediség kis- és nagybetűtől független legyen.
+     */
     public static String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
