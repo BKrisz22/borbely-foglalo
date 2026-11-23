@@ -1,0 +1,89 @@
+<section class="hero">
+  <div class="page hero-inner">
+    <h1 class="hero-title">Foglalj időpontot pár kattintással</h1>
+    <p class="hero-lead">
+      Válaszd ki a szolgáltatást és a borbélyt: csak a ténylegesen szabad időpontokat látod, 15
+      perces pontossággal.
+    </p>
+    <div class="hero-actions">
+      @if (isStaff()) {
+        <a matButton="filled" [routerLink]="homeUrl()">
+          <mat-icon>calendar_month</mat-icon>
+          Naptár megnyitása
+        </a>
+      } @else {
+        <a matButton="filled" routerLink="/foglalas">
+          <mat-icon>event_available</mat-icon>
+          Időpontot foglalok
+        </a>
+      }
+      @if (!isLoggedIn()) {
+        <a matButton="outlined" routerLink="/belepes">Belépés</a>
+      }
+    </div>
+  </div>
+</section>
+
+<div class="page">
+  @if (error(); as message) {
+    <div class="form-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+
+  <h2 class="section-title">Szolgáltatások</h2>
+  @if (services(); as list) {
+    <div class="grid">
+      @for (service of list; track service.id) {
+        <mat-card appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>{{ service.name }}</mat-card-title>
+            <mat-card-subtitle>{{ service.durationMinutes }} perc</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (service.description) {
+              <p class="muted">{{ service.description }}</p>
+            }
+            <p class="price">{{ service.priceHuf | currency: 'HUF' : 'symbol' : '1.0-0' }}</p>
+          </mat-card-content>
+        </mat-card>
+      } @empty {
+        <p class="muted">Még nincs meghirdetett szolgáltatás.</p>
+      }
+    </div>
+  } @else if (!error()) {
+    <div class="center-spinner"><mat-spinner [diameter]="40" /></div>
+  }
+
+  <h2 class="section-title">Borbélyaink</h2>
+  @if (barbers(); as list) {
+    <div class="grid">
+      @for (barber of list; track barber.id) {
+        <mat-card appearance="outlined">
+          <mat-card-header>
+            <div mat-card-avatar class="avatar" aria-hidden="true">
+              {{ initials(barber.fullName) }}
+            </div>
+            <mat-card-title>{{ barber.fullName }}</mat-card-title>
+            <mat-card-subtitle>{{ barber.services.length }} szolgáltatás</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (barber.bio) {
+              <p class="muted">{{ barber.bio }}</p>
+            }
+            <mat-chip-set aria-label="Vállalt szolgáltatások">
+              @for (offered of barber.services; track offered.id) {
+                <mat-chip>{{ offered.name }}</mat-chip>
+              }
+            </mat-chip-set>
+          </mat-card-content>
+        </mat-card>
+      } @empty {
+        <p class="muted">Még nincs aktív borbély.</p>
+      }
+    </div>
+  } @else if (!error()) {
+    <div class="center-spinner"><mat-spinner [diameter]="40" /></div>
+  }
+</div>

@@ -1,1 +1,108 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+// Material 3 téma: kék elsődleges, narancs kiegészítő szín, Roboto betűtípus.
+// A mat.theme() CSS-változókat (--mat-sys-*) állít elő; a saját stílusok is ezeket használják.
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+app-root {
+  display: block;
+  height: 100%;
+}
+
+a {
+  color: var(--mat-sys-primary);
+}
+
+// Az oldalsó menü sarkai ne legyenek lekerekítve, ha állandóan látszik.
+.mat-drawer-side {
+  @include mat.sidenav-overrides(
+    (
+      container-shape: 0,
+    )
+  );
+}
+
+// Közös oldalelrendezés.
+.page {
+  box-sizing: border-box;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.page-title {
+  margin: 0 0 8px;
+  font: var(--mat-sys-headline-small);
+}
+
+.page-lead {
+  margin: 0 0 24px;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.center-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+// Űrlapok fölötti hiba- és tájékoztató sáv.
+.form-error,
+.form-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: var(--mat-sys-corner-medium);
+}
+
+.form-error {
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+.form-info {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+// Hibaüzenet a képernyő alján (Notifier.error).
+.snack-error {
+  @include mat.snack-bar-overrides(
+    (
+      container-color: var(--mat-sys-error-container),
+      supporting-text-color: var(--mat-sys-on-error-container),
+      button-color: var(--mat-sys-on-error-container),
+    )
+  );
+}

@@ -32,7 +32,18 @@ Szükséges: JDK 21, Docker Desktop, Node.js.
    npm install
    npm start
    ```
-   Címe: http://localhost:4200
+   Címe: http://localhost:4200 (az `/api` kéréseket a fejlesztői szerver továbbítja a backendnek, lásd `frontend/proxy.conf.json`).
+
+## Bemutató adatok
+
+A backend `demo` profillal indítva üres adatbázisba bemutató adatokat tölt: szolgáltatásokat, borbélyokat, vendégeket, három hét munkaidőt és néhány foglalást.
+
+```
+cd backend
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
+```
+
+Minden bemutató fiók jelszava `Demo1234`, például `vilma@example.com` (vendég) és `kovacs.peter@example.com` (borbély). Ha az adatbázisban már van szolgáltatás vagy borbély, nem tölt be semmit; tiszta induláshoz `docker compose down -v`, majd `docker compose up -d`.
 
 A `backend/http` mappában vannak példakérések az API kipróbálásához.
 
@@ -41,4 +52,9 @@ A `backend/http` mappában vannak példakérések az API kipróbálásához.
 ```
 cd backend
 .\mvnw.cmd test
+```
+
+```
+cd frontend
+npm test
 ```

@@ -1,0 +1,24 @@
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.head-icon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  font-size: 48px;
+  color: var(--mat-sys-primary);
+}
+
+.plans-title {
+  margin: 24px 0 8px;
+  font: var(--mat-sys-title-medium);
+}
+
+.plans {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}

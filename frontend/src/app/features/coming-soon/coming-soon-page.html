@@ -1,0 +1,28 @@
+<div class="page">
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <div class="head">
+        <mat-icon class="head-icon" aria-hidden="true">{{ icon() }}</mat-icon>
+        <div>
+          <h1 class="page-title">{{ heading() }}</h1>
+          <p class="muted">
+            @if (extra()) {
+              Ez a funkció a bemutató utáni bővítések része.
+            } @else {
+              Ez az oldal a következő fejlesztési lépésben készül el.
+            }
+          </p>
+        </div>
+      </div>
+
+      @if (plans().length > 0) {
+        <h2 class="plans-title">Mit fog tudni?</h2>
+        <ul class="plans">
+          @for (plan of plans(); track plan) {
+            <li>{{ plan }}</li>
+          }
+        </ul>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
