@@ -1,0 +1,89 @@
+<div class="page">
+  <div class="head">
+    <h1 class="page-title">Foglalásaim</h1>
+    <a matButton="filled" routerLink="/foglalas">
+      <mat-icon>add</mat-icon>
+      Új foglalás
+    </a>
+  </div>
+
+  @if (error(); as message) {
+    <div class="form-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+
+  @if (bookings()) {
+    <h2 class="section-title">Közelgő</h2>
+    <div class="list">
+      @for (booking of split().upcoming; track booking.id) {
+        <mat-card appearance="outlined" class="booking">
+          <mat-card-content class="booking-body">
+            <div class="when">
+              <span class="time"
+                >{{ shopTime(booking.startAt) }}–{{ shopTime(booking.endAt) }}</span
+              >
+              <span class="date">{{ shopDate(booking.startAt) }}</span>
+            </div>
+            <div class="what">
+              <span class="service">{{ booking.serviceName }}</span>
+              <span class="muted"
+                >{{ booking.barberName }} ·
+                {{ booking.priceHuf | currency: 'HUF' : 'symbol' : '1.0-0' }}</span
+              >
+            </div>
+            <div class="actions">
+              @if (canCancel(booking)) {
+                <button
+                  matButton="outlined"
+                  type="button"
+                  (click)="cancel(booking)"
+                  [disabled]="cancelling() === booking.id"
+                >
+                  {{ cancelling() === booking.id ? 'Lemondás…' : 'Lemondás' }}
+                </button>
+              } @else {
+                <span class="hint">
+                  {{ cancelDeadlineHours }} órán belül már csak a szalonban lehet lemondani.
+                </span>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      } @empty {
+        <div class="empty">
+          <p class="muted">Nincs közelgő foglalásod.</p>
+          <a matButton="tonal" routerLink="/foglalas">Időpontot foglalok</a>
+        </div>
+      }
+    </div>
+
+    <h2 class="section-title">
+      Korábbi <span class="muted">(az elmúlt {{ historyDays }} nap)</span>
+    </h2>
+    <div class="list">
+      @for (booking of split().past; track booking.id) {
+        <mat-card appearance="outlined" class="booking past">
+          <mat-card-content class="booking-body">
+            <div class="when">
+              <span class="time">{{ shopTime(booking.startAt) }}</span>
+              <span class="date">{{ shopDate(booking.startAt) }}</span>
+            </div>
+            <div class="what">
+              <span class="service">{{ booking.serviceName }}</span>
+              <span class="muted">{{ booking.barberName }}</span>
+            </div>
+            <span class="status" [class]="'status status-' + booking.status.toLowerCase()">
+              {{ statusLabels[booking.status] }}
+            </span>
+          </mat-card-content>
+        </mat-card>
+      } @empty {
+        <p class="muted">Nincs korábbi foglalásod.</p>
+      }
+    </div>
+  } @else if (!error()) {
+    <div class="center-spinner"><mat-spinner [diameter]="40" /></div>
+  }
+</div>

@@ -60,17 +60,13 @@ export const routes: Routes = [
         title: 'Időpontfoglalás',
         loadComponent: () => import('./features/booking/booking-page').then((m) => m.BookingPage),
       },
-      comingSoon(
-        'foglalasaim',
-        'Foglalásaim',
-        'event_note',
-        [
-          'Közelgő és korábbi foglalások',
-          'Lemondás legkésőbb 24 órával a kezdés előtt',
-          'Bővítés: naptárba mentés (ICS, Google Naptár), üzenetváltás a borbéllyal',
-        ],
-        [roleGuard('CUSTOMER')],
-      ),
+      {
+        path: 'foglalasaim',
+        title: 'Foglalásaim',
+        canActivate: [roleGuard('CUSTOMER')],
+        loadComponent: () =>
+          import('./features/my-bookings/my-bookings-page').then((m) => m.MyBookingsPage),
+      },
       comingSoon(
         'naptar',
         'Naptár',
