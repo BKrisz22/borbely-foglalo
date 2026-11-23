@@ -18,6 +18,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { AppTitleStrategy } from './core/ui/app-title-strategy';
+import { provideHuDateAdapter } from './core/ui/hu-date-adapter';
 
 // Magyar dátum-, szám- és pénznemformátum (például „6 500 Ft”, „2026. december 1.”).
 registerLocaleData(localeHu);
@@ -33,6 +34,8 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'hu' },
     { provide: TitleStrategy, useClass: AppTitleStrategy },
     { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: formFieldDefaults },
+    // A Material naptár (foglalási tölcsér, később a beosztás) magyarul, hétfői hétkezdettel.
+    ...provideHuDateAdapter(),
     provideAppInitializer(() => inject(AuthService).syncUser()),
   ],
 };

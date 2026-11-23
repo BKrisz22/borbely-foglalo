@@ -1,0 +1,278 @@
+<div class="page">
+  <h1 class="page-title">{{ isStaff() ? 'Foglalás felvétele' : 'Időpontfoglalás' }}</h1>
+  <p class="page-lead">
+    @if (isStaff()) {
+      Vendég nevében, például telefonos bejelentkezésnél.
+    } @else {
+      Válassz szolgáltatást, borbélyt és időpontot. Belépni csak a végén kell.
+    }
+  </p>
+
+  @if (booked()) {
+    <mat-card appearance="outlined" class="done">
+      <mat-card-content>
+        <mat-icon class="done-icon" aria-hidden="true">check_circle</mat-icon>
+        <h2 class="done-title">Sikeres foglalás</h2>
+        @if (selection(); as sel) {
+          <p class="done-text">
+            {{ sel.service.name }} – {{ sel.barber.fullName }}<br />
+            {{ sel.date | date: 'fullDate' }}, {{ sel.slot.time }}–{{ sel.end }}
+          </p>
+        }
+        @if (customer(); as guest) {
+          <p class="muted">Vendég: {{ guest.fullName }}</p>
+        }
+        <div class="actions centered">
+          @if (isStaff()) {
+            <a matButton="filled" routerLink="/naptar">Naptár</a>
+          } @else {
+            <a matButton="filled" routerLink="/foglalasaim">Foglalásaim</a>
+          }
+          <button matButton="outlined" type="button" (click)="newBooking()">Új foglalás</button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    @if (error(); as message) {
+      <div class="form-error" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ message }}</span>
+      </div>
+    }
+    @if (notice(); as message) {
+      <div class="form-info" role="status">
+        <mat-icon>info</mat-icon>
+        <span>{{ message }}</span>
+      </div>
+    }
+
+    <div class="steps">
+      <!-- 1. Szolgáltatás -->
+      <section class="step" [class.active]="step() === 0">
+        <app-step-header
+          [index]="0"
+          title="Szolgáltatás"
+          [state]="stateOf(0)"
+          [summary]="serviceSummary()"
+          (edit)="editStep(0)"
+        />
+        @if (step() === 0) {
+          <div class="step-body">
+            @if (services(); as list) {
+              <div class="choices">
+                @for (item of list; track item.id) {
+                  <button type="button" class="choice" (click)="selectService(item)">
+                    <span class="choice-title">{{ item.name }}</span>
+                    <span class="choice-meta">
+                      {{ item.durationMinutes }} perc ·
+                      {{ item.priceHuf | currency: 'HUF' : 'symbol' : '1.0-0' }}
+                    </span>
+                    @if (item.description) {
+                      <span class="choice-desc">{{ item.description }}</span>
+                    }
+                  </button>
+                } @empty {
+                  <p class="muted">Jelenleg nincs foglalható szolgáltatás.</p>
+                }
+              </div>
+            } @else {
+              <div class="center-spinner"><mat-spinner [diameter]="36" /></div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- 2. Borbély -->
+      <section class="step" [class.active]="step() === 1">
+        <app-step-header
+          [index]="1"
+          title="Borbély"
+          [state]="stateOf(1)"
+          [summary]="barberSummary()"
+          (edit)="editStep(1)"
+        />
+        @if (step() === 1) {
+          <div class="step-body">
+            @if (barbers(); as list) {
+              <div class="choices">
+                @for (item of list; track item.id) {
+                  <button type="button" class="choice choice-row" (click)="selectBarber(item)">
+                    <span class="avatar" aria-hidden="true">{{ initials(item.fullName) }}</span>
+                    <span class="choice-text">
+                      <span class="choice-title">{{ item.fullName }}</span>
+                      @if (item.bio) {
+                        <span class="choice-desc">{{ item.bio }}</span>
+                      }
+                    </span>
+                  </button>
+                } @empty {
+                  <p class="muted">
+                    Ezt a szolgáltatást jelenleg senki nem vállalja{{
+                      isStaff() ? ' ebben a naptárban' : ''
+                    }}. Válassz másik szolgáltatást.
+                  </p>
+                }
+              </div>
+            } @else {
+              <div class="center-spinner"><mat-spinner [diameter]="36" /></div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- 3. Nap és időpont -->
+      <section class="step" [class.active]="step() === 2">
+        <app-step-header
+          [index]="2"
+          title="Időpont"
+          [state]="stateOf(2)"
+          [summary]="timeSummary()"
+          (edit)="editStep(2)"
+        />
+        @if (step() === 2) {
+          <div class="step-body">
+            @if (availableDays(); as days) {
+              @if (days.size > 0) {
+                <div class="time-picker">
+                  <mat-card appearance="outlined" class="calendar-card">
+                    <mat-calendar
+                      [selected]="date()"
+                      [startAt]="date()"
+                      [minDate]="today"
+                      [maxDate]="lastDay"
+                      [dateFilter]="dateFilter()"
+                      (selectedChange)="selectDate($event)"
+                    />
+                  </mat-card>
+                  <div>
+                    @if (date(); as day) {
+                      <h3 class="slots-title">{{ day | date: 'fullDate' }}</h3>
+                      @if (slots()) {
+                        @for (group of slotGroups(); track group.label) {
+                          <div class="slot-group">
+                            <span class="slot-group-label">{{ group.label }}</span>
+                            <div class="slot-buttons">
+                              @for (item of group.slots; track item.startAt) {
+                                <button
+                                  matButton="outlined"
+                                  type="button"
+                                  (click)="selectSlot(item)"
+                                >
+                                  {{ item.time }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        } @empty {
+                          <p class="muted">
+                            Erre a napra már nincs szabad időpont. Válassz másik napot.
+                          </p>
+                        }
+                      } @else {
+                        <div class="center-spinner"><mat-spinner [diameter]="36" /></div>
+                      }
+                    }
+                  </div>
+                </div>
+              } @else {
+                <p class="muted">
+                  A következő {{ horizonDays }} napban nincs szabad időpont ennél a borbélynál.
+                  Válassz másik borbélyt.
+                </p>
+              }
+            } @else {
+              <div class="center-spinner"><mat-spinner [diameter]="36" /></div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- 4. Összegzés -->
+      <section class="step" [class.active]="step() === 3">
+        <app-step-header [index]="3" title="Összegzés" [state]="stateOf(3)" [editable]="false" />
+        @if (step() === 3) {
+          @if (selection(); as sel) {
+            <div class="step-body">
+              <dl class="summary">
+                <dt>Szolgáltatás</dt>
+                <dd>{{ sel.service.name }} ({{ sel.service.durationMinutes }} perc)</dd>
+                <dt>Borbély</dt>
+                <dd>{{ sel.barber.fullName }}</dd>
+                <dt>Időpont</dt>
+                <dd>{{ sel.date | date: 'fullDate' }}, {{ sel.slot.time }}–{{ sel.end }}</dd>
+                <dt>Ár</dt>
+                <dd>{{ sel.service.priceHuf | currency: 'HUF' : 'symbol' : '1.0-0' }}</dd>
+              </dl>
+
+              @if (!isLoggedIn()) {
+                <div class="form-info" role="status">
+                  <mat-icon>info</mat-icon>
+                  <span>A foglaláshoz be kell jelentkezned. A választásodat megjegyezzük.</span>
+                </div>
+                <div class="actions">
+                  <a
+                    matButton="filled"
+                    routerLink="/belepes"
+                    [queryParams]="{ returnUrl: currentUrl() }"
+                  >
+                    Belépés és foglalás
+                  </a>
+                  <a
+                    matButton="outlined"
+                    routerLink="/regisztracio"
+                    [queryParams]="{ returnUrl: currentUrl() }"
+                  >
+                    Regisztráció
+                  </a>
+                </div>
+              } @else {
+                @if (isStaff()) {
+                  <mat-form-field class="customer-field">
+                    <mat-label>Vendég</mat-label>
+                    <input
+                      matInput
+                      [formControl]="customerQuery"
+                      [matAutocomplete]="customerList"
+                      placeholder="Név vagy e-mail-cím"
+                    />
+                    <mat-icon matSuffix>search</mat-icon>
+                    <mat-autocomplete
+                      #customerList="matAutocomplete"
+                      [displayWith]="customerLabel"
+                      (optionSelected)="selectCustomer($event)"
+                    >
+                      @for (item of customerResults(); track item.id) {
+                        <mat-option [value]="item"
+                          >{{ item.fullName }} · {{ item.email }}</mat-option
+                        >
+                      }
+                    </mat-autocomplete>
+                    <mat-hint>Legalább 2 karakter. Csak regisztrált vendég választható.</mat-hint>
+                  </mat-form-field>
+                } @else {
+                  <p class="muted">
+                    Lemondani legkésőbb {{ cancelDeadlineHours }} órával a kezdés előtt lehet.
+                  </p>
+                }
+                <div class="actions">
+                  <button
+                    matButton="filled"
+                    type="button"
+                    (click)="book()"
+                    [disabled]="submitting() || (isStaff() && !customer())"
+                  >
+                    @if (submitting()) {
+                      Foglalás…
+                    } @else {
+                      {{ isStaff() ? 'Foglalás rögzítése' : 'Foglalás véglegesítése' }}
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+      </section>
+    </div>
+  }
+</div>

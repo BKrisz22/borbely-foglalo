@@ -14,7 +14,7 @@ describe('navItemsFor', () => {
 
   it('a borbély a naptárt, a beosztást és a profilját látja, a tulajdonosi oldalakat nem', () => {
     const items = paths('BARBER');
-    expect(items).toEqual(['/', '/naptar', '/beosztas', '/profil']);
+    expect(items).toEqual(['/', '/naptar', '/foglalas', '/beosztas', '/profil']);
     expect(items).not.toContain('/szolgaltatasok');
   });
 
@@ -23,6 +23,7 @@ describe('navItemsFor', () => {
     expect(items.map((item) => item.path)).toEqual([
       '/',
       '/naptar',
+      '/foglalas',
       '/beosztas',
       '/szolgaltatasok',
       '/borbelyok',

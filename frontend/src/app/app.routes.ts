@@ -54,13 +54,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/auth/change-password-page').then((m) => m.ChangePasswordPage),
       },
-      comingSoon('foglalas', 'Időpontfoglalás', 'event_available', [
-        'Szolgáltatás kiválasztása',
-        'Borbély kiválasztása – csak azok jelennek meg, akik a szolgáltatást vállalják',
-        'Naptár, amelyben csak a szabad napok választhatók',
-        'Szabad időpontok 15 perces rácson, a csúszóablakos keresővel',
-        'Összegzés és foglalás; belépés vagy regisztráció csak a végén kell',
-      ]),
+      {
+        // Belépés nélkül is végigjárható; a foglaláshoz a tölcsér végén kell belépni.
+        path: 'foglalas',
+        title: 'Időpontfoglalás',
+        loadComponent: () => import('./features/booking/booking-page').then((m) => m.BookingPage),
+      },
       comingSoon(
         'foglalasaim',
         'Foglalásaim',
