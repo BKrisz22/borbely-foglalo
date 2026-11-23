@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  *       ma + N nap (app.schedule.booking-horizon-days) közötti napra lehet foglalni.</li>
  * </ol>
  * A két munkaidő-sáv közötti szünet zárt slot marad, így egy foglalás nem nyúlhat át rajta.
+ * Ugyanígy zárt a tavaszi óraátállításkor kimaradó óra is.
  */
 @Service
 public class SlotService {
@@ -111,6 +112,7 @@ public class SlotService {
         for (Availability slot : open) {
             grid.open(minuteOf(slot.getStartTime()), minuteOf(slot.getEndTime()));
         }
+        closeNonexistentTimes(grid, date);
         Instant dayStart = time.startOfDay(date);
         Instant dayEnd = time.startOfDay(date.plusDays(1));
         for (Booking booking : window.bookings()) {
@@ -126,6 +128,20 @@ public class SlotService {
                 .map(index -> time.toInstant(date, SlotGrid.startOf(index)))
                 .filter(start -> !start.isBefore(earliest))
                 .toList();
+    }
+
+    /**
+     * A tavaszi óraátállítás napján helyi idő szerint 2:00 és 3:00 között nincs idő. Ezek a slotok
+     * zártak maradnak, különben 3:00-ra csúsznának, és ugyanaz a kezdőpont kétszer szerepelne.
+     * Az őszi átállításkor kétszer előforduló órát a rács egyszer, az első előfordulásával kezeli;
+     * egy borbélyüzlet ebben az órában nem dolgozik.
+     */
+    private void closeNonexistentTimes(SlotGrid grid, LocalDate date) {
+        for (int i = 0; i < SlotGrid.SLOTS_PER_DAY; i++) {
+            if (!time.exists(date, SlotGrid.startOf(i))) {
+                grid.block(i * SlotGrid.SLOT_MINUTES, (i + 1) * SlotGrid.SLOT_MINUTES);
+            }
+        }
     }
 
     /** Lezárja a rácson egy foglalás vagy távollét napra eső részét. */

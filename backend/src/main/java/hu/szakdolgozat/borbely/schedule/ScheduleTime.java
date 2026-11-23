@@ -56,6 +56,14 @@ public class ScheduleTime {
     }
 
     /**
+     * Létezik-e ez a helyi időpont az adott napon. A tavaszi óraátállítás napján (például
+     * 2027. március 28-án) helyi idő szerint 2:00 és 3:00 között nincs idő.
+     */
+    public boolean exists(LocalDate date, LocalTime time) {
+        return !zone.getRules().getValidOffsets(date.atTime(time)).isEmpty();
+    }
+
+    /**
      * Hány perc telt el helyi idő szerint a nap kezdete óta az adott időpontig. A napnál korábbi
      * időpontra 0, a napnál későbbire 1440 jön ki, így a több napon átnyúló távollét is a napra vágható.
      */
