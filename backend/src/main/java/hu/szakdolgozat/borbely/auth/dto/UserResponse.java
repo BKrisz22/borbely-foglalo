@@ -5,23 +5,26 @@ import hu.szakdolgozat.borbely.user.Role;
 
 /**
  * A bejelentkezett felhasználó adatai. A {@code mustChangePassword} jelzi a frontendnek,
- * hogy a felhasználót a jelszócsere oldalra kell irányítania.
+ * hogy a felhasználót a jelszócsere oldalra kell irányítania. A {@code barberId} a felhasználó
+ * borbélyprofiljának azonosítója (a borbély ezzel éri el a saját beosztását); vendégnél null.
  */
 public record UserResponse(
         Long id,
         String email,
         String fullName,
         Role role,
-        boolean mustChangePassword
+        boolean mustChangePassword,
+        Long barberId
 ) {
 
-    public static UserResponse from(AppUser user) {
+    public static UserResponse from(AppUser user, Long barberId) {
         return new UserResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
                 user.getRole(),
-                user.isMustChangePassword()
+                user.isMustChangePassword(),
+                barberId
         );
     }
 }

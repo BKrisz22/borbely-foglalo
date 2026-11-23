@@ -1,0 +1,20 @@
+// Személyzet: vendégkereső (telefonos foglaláshoz) és a borbély saját profilja.
+// Előtte lépj be borbélyként vagy tulajdonosként (auth.http, schedule.http).
+
+### Vendég keresése név vagy e-mail részlete alapján (200; vendégként 403)
+GET http://localhost:8080/api/customers?query=vilma
+Authorization: Bearer {{token}}
+
+### Saját profil: bemutatkozás és foglalási határidő percben (200; más borbélyé 403)
+PUT http://localhost:8080/api/barbers/1/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bio": "Tíz éve borbély, a klasszikus vágások specialistája.",
+  "minLeadMinutes": 30
+}
+
+### Saját adatok: a borbélynál a barberId is benne van (200)
+GET http://localhost:8080/api/auth/me
+Authorization: Bearer {{token}}

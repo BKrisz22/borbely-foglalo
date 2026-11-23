@@ -1,17 +1,21 @@
 package hu.szakdolgozat.borbely.barber;
 
 import hu.szakdolgozat.borbely.barber.dto.BarberCreateRequest;
+import hu.szakdolgozat.borbely.barber.dto.BarberProfileRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberPublicResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberServicesRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberUpdateRequest;
 import hu.szakdolgozat.borbely.common.ConflictException;
 import hu.szakdolgozat.borbely.common.NotFoundException;
+import hu.szakdolgozat.borbely.security.Authentications;
 import hu.szakdolgozat.borbely.serviceoffering.ServiceOffering;
 import hu.szakdolgozat.borbely.serviceoffering.ServiceOfferingRepository;
 import hu.szakdolgozat.borbely.user.AppUser;
 import hu.szakdolgozat.borbely.user.AppUserRepository;
 import hu.szakdolgozat.borbely.user.Role;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,6 +115,22 @@ public class BarberService {
         if (request.active() != null) {
             barber.setActive(request.active());
         }
+        return BarberResponse.from(barber);
+    }
+
+    /**
+     * A borbély saját profilja: bemutatkozás és foglalási határidő. A borbély a sajátját,
+     * a tulajdonos bárkiét módosíthatja; a nevet, az aktív állapotot és a szolgáltatásokat csak a tulajdonos.
+     */
+    @Transactional
+    public BarberResponse updateProfile(Long id, BarberProfileRequest request, Authentication authentication) {
+        Barber barber = find(id);
+        if (!Authentications.isOwner(authentication)
+                && !barber.getUser().getId().equals(Authentications.userId(authentication))) {
+            throw new AccessDeniedException("Csak a saját profilodat módosíthatod.");
+        }
+        barber.setBio(blankToNull(request.bio()));
+        barber.setMinLeadMinutes(request.minLeadMinutes());
         return BarberResponse.from(barber);
     }
 

@@ -56,6 +56,10 @@ public class SecurityConfig {
                         // A beosztás nem nyilvános: borbély vagy tulajdonos érheti el; hogy kiét, azt a ScheduleAccess dönti el.
                         .requestMatchers("/api/barbers/*/availability/**", "/api/barbers/*/time-off/**")
                         .hasAnyRole("BARBER", "OWNER")
+                        // A borbély a saját profilját (bemutatkozás, foglalási határidő) maga is módosíthatja.
+                        .requestMatchers(HttpMethod.PUT, "/api/barbers/*/profile").hasAnyRole("BARBER", "OWNER")
+                        // A vendégkereső a telefonos foglaláshoz kell; vendégek adatait csak a személyzet látja.
+                        .requestMatchers("/api/customers/**").hasAnyRole("BARBER", "OWNER")
                         // A foglalási tölcsér belépés nélkül is böngészhető.
                         .requestMatchers(HttpMethod.GET, "/api/services/**", "/api/barbers/**").permitAll()
                         .requestMatchers("/api/services/**", "/api/barbers/**").hasRole("OWNER")

@@ -5,6 +5,8 @@ import hu.szakdolgozat.borbely.auth.dto.ChangePasswordRequest;
 import hu.szakdolgozat.borbely.auth.dto.LoginRequest;
 import hu.szakdolgozat.borbely.auth.dto.RegisterRequest;
 import hu.szakdolgozat.borbely.auth.dto.UserResponse;
+import hu.szakdolgozat.borbely.barber.Barber;
+import hu.szakdolgozat.borbely.barber.BarberRepository;
 import hu.szakdolgozat.borbely.common.BadRequestException;
 import hu.szakdolgozat.borbely.common.ConflictException;
 import hu.szakdolgozat.borbely.common.NotFoundException;
@@ -32,10 +34,13 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final BarberRepository barbers;
 
     public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager, TokenService tokenService) {
+                       AuthenticationManager authenticationManager, TokenService tokenService,
+                       BarberRepository barbers) {
         this.users = users;
+        this.barbers = barbers;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
@@ -65,7 +70,7 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public UserResponse me(Long userId) {
-        return UserResponse.from(find(userId));
+        return toResponse(find(userId));
     }
 
     /**
@@ -92,6 +97,12 @@ public class AuthService {
 
     private AuthResponse authResponse(AppUser user) {
         IssuedToken token = tokenService.issue(user);
-        return new AuthResponse(token.token(), token.expiresAt(), UserResponse.from(user));
+        return new AuthResponse(token.token(), token.expiresAt(), toResponse(user));
+    }
+
+    /** A felhasználó adatai a borbélyprofil azonosítójával együtt (ha van). */
+    private UserResponse toResponse(AppUser user) {
+        Long barberId = barbers.findByUserId(user.getId()).map(Barber::getId).orElse(null);
+        return UserResponse.from(user, barberId);
     }
 }

@@ -1,6 +1,7 @@
 package hu.szakdolgozat.borbely.barber;
 
 import hu.szakdolgozat.borbely.barber.dto.BarberCreateRequest;
+import hu.szakdolgozat.borbely.barber.dto.BarberProfileRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberServicesRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberUpdateRequest;
@@ -69,6 +70,14 @@ public class BarberController {
     public BarberResponse replaceServices(
             @PathVariable("id") Long id, @Valid @RequestBody BarberServicesRequest request) {
         return barbers.replaceServices(id, request);
+    }
+
+    /** A borbély saját profilja (bemutatkozás, foglalási határidő); a borbély a sajátját, a tulajdonos bárkiét. */
+    @PutMapping("/{id}/profile")
+    public BarberResponse updateProfile(@PathVariable("id") Long id,
+                                        @Valid @RequestBody BarberProfileRequest request,
+                                        Authentication authentication) {
+        return barbers.updateProfile(id, request, authentication);
     }
 
     /**
