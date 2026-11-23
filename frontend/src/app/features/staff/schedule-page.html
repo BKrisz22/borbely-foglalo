@@ -7,6 +7,10 @@
         <mat-icon>content_copy</mat-icon>
         Előző hét másolása
       </button>
+      <button matButton="tonal" type="button" [disabled]="!canCopy()" (click)="repeatWeek()">
+        <mat-icon>repeat</mat-icon>
+        Ismétlés {{ repeatWeeks }} hétre
+      </button>
     </div>
   </div>
 

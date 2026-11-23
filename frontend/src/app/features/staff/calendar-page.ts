@@ -1,6 +1,7 @@
 import { Component, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import {
   CalendarOptions,
+  DateClickInfo,
   EventClickInfo,
   EventInput,
   EventSourceFuncInfo,
@@ -10,8 +11,20 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
-import { EMPTY, Observable, filter, firstValueFrom, forkJoin, map, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import {
+  EMPTY,
+  Observable,
+  filter,
+  firstValueFrom,
+  forkJoin,
+  fromEvent,
+  interval,
+  map,
+  merge,
+  switchMap,
+} from 'rxjs';
 
 import { Booking } from '../../core/api/api.models';
 import { BookingApi } from '../../core/api/booking-api';
@@ -27,14 +40,20 @@ import {
   BookingAction,
   availabilityEvent,
   bookingEvent,
+  dayLabel,
   entryOf,
+  instantOf,
   shiftDate,
   staffActions,
   timeOffEvent,
   wallClock,
+  withShopOffset,
 } from './calendar-events';
 import { baseCalendarOptions } from './calendar-options';
 import { StaffBarberContext } from './staff-barber';
+
+/** Ilyen időközönként frissül magától a naptár (az új foglalások így maguktól megjelennek). */
+const REFRESH_INTERVAL_MS = 60_000;
 
 const DONE_MESSAGES: Readonly<Record<BookingAction, string>> = {
   cancel: 'A foglalást lemondtad.',
@@ -44,7 +63,8 @@ const DONE_MESSAGES: Readonly<Record<BookingAction, string>> = {
 
 /**
  * A borbély heti naptára: a foglalások kattintható blokkok, a munkaidő és a távollét háttérszín.
- * Egy foglalásra kattintva kezdés előtt lemondható, utána lezárható (megjelent, nem jelent meg).
+ * Egy foglalásra kattintva kezdés előtt lemondható, utána lezárható (megjelent, nem jelent meg);
+ * üres időpontra kattintva telefonos foglalás vehető fel erre a borbélyra és időpontra.
  */
 @Component({
   selector: 'app-calendar-page',
@@ -57,6 +77,7 @@ export class CalendarPage {
   private readonly schedule = inject(ScheduleApi);
   private readonly dialog = inject(MatDialog);
   private readonly notifier = inject(Notifier);
+  private readonly router = inject(Router);
   protected readonly context = inject(StaffBarberContext);
 
   private readonly calendar = viewChild(FullCalendarComponent);
@@ -64,8 +85,10 @@ export class CalendarPage {
 
   protected readonly options: CalendarOptions = {
     ...baseCalendarOptions(),
+    snapDuration: '00:15',
     events: (info: EventSourceFuncInfo) => this.loadEvents(info),
     eventClick: (info: EventClickInfo) => this.onEventClick(info),
+    dateClick: (info: DateClickInfo) => this.onDateClick(info),
   };
 
   constructor() {
@@ -74,6 +97,13 @@ export class CalendarPage {
       this.context.barberId();
       untracked(() => this.refresh());
     });
+    // Percenként, és amikor a lap újra előtérbe kerül, frissül: az új foglalások maguktól megjelennek.
+    merge(interval(REFRESH_INTERVAL_MS), fromEvent(document, 'visibilitychange'))
+      .pipe(
+        filter(() => document.visibilityState === 'visible'),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.refresh());
   }
 
   private refresh(): void {
@@ -110,6 +140,29 @@ export class CalendarPage {
         return [];
       },
     );
+  }
+
+  /** Üres, jövőbeli időpontra kattintva a foglalási tölcsér nyílik meg előválasztással. */
+  private onDateClick(info: DateClickInfo): void {
+    const barberId = this.context.barberId();
+    if (barberId === null || instantOf(info.dateStr) <= Date.now()) {
+      return;
+    }
+    const { date, time } = wallClock(info.dateStr);
+    const who = this.context.barberName();
+    confirmAction(this.dialog, {
+      title: 'Foglalás felvétele',
+      message:
+        `${who ? who + ', ' : ''}${dayLabel(date)}, ${time}. ` +
+        'A következő lépésben kiválasztod a szolgáltatást és a vendéget.',
+      confirmLabel: 'Tovább',
+    })
+      .pipe(filter((confirmed) => confirmed))
+      .subscribe(() => {
+        void this.router.navigate(['/foglalas'], {
+          queryParams: { barberId, date, startAt: withShopOffset(info.dateStr) },
+        });
+      });
   }
 
   private onEventClick(info: EventClickInfo): void {

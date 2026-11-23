@@ -36,6 +36,16 @@ export class StaffBarberContext {
     return barbers.some((barber) => barber.id === chosen) ? chosen : (barbers[0]?.id ?? null);
   });
 
+  /** A naptárban látott borbély neve (a borbélynak a saját neve). */
+  readonly barberName = computed<string | null>(() => {
+    const user = this.auth.user();
+    if (user?.role === 'BARBER') {
+      return user.fullName;
+    }
+    const barberId = this.barberId();
+    return this.barbers()?.find((barber) => barber.id === barberId)?.fullName ?? null;
+  });
+
   /** A tulajdonosnak betölti a borbélyok listáját (csak egyszer). */
   load(): void {
     if (!this.isOwner() || this.barbers() !== null || this.loading) {

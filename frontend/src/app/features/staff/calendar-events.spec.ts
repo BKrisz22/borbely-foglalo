@@ -9,6 +9,7 @@ import {
   rangeLabel,
   shiftDate,
   weekLabel,
+  weeksLabel,
   staffActions,
   timeOffEvent,
   wallClock,
@@ -153,6 +154,7 @@ describe('hét és nap', () => {
 
   it('weekLabel a hétfőtől vasárnapig tartó hetet írja ki', () => {
     expect(weekLabel('2026-11-30')).toBe('nov. 30. – dec. 6.');
+    expect(weeksLabel('2026-11-30', 4)).toBe('nov. 30. – dec. 27.');
   });
 
   it('rangeLabel', () => {

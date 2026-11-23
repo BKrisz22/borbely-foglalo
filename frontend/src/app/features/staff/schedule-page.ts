@@ -16,7 +16,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { Observable, filter, firstValueFrom, forkJoin, map, switchMap, tap } from 'rxjs';
+import {
+  Observable,
+  concatMap,
+  filter,
+  firstValueFrom,
+  forkJoin,
+  from,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import { Availability, TimeOff } from '../../core/api/api.models';
 import { BookingApi } from '../../core/api/booking-api';
@@ -41,11 +51,15 @@ import {
   timeOffEvent,
   wallClock,
   weekLabel,
+  weeksLabel,
   withShopOffset,
 } from './calendar-events';
 import { baseCalendarOptions } from './calendar-options';
 import { NewEntryResult, openNewEntry } from './new-entry-dialog';
 import { StaffBarberContext } from './staff-barber';
+
+/** Ennyi hétre ismétli a látott hetet az „Ismétlés” gomb (a foglalási ablak 30 nap). */
+const REPEAT_WEEKS = 4;
 
 /**
  * A borbély beosztása heti rácson: kijelöléssel munkaidő vagy távollét vehető fel 15 perces
@@ -87,6 +101,7 @@ export class SchedulePage {
     );
   });
   protected readonly weekLabel = weekLabel;
+  protected readonly repeatWeeks = REPEAT_WEEKS;
 
   protected readonly options: CalendarOptions = {
     ...baseCalendarOptions(),
@@ -142,6 +157,57 @@ export class SchedulePage {
         error: (error: unknown) => {
           this.copying.set(false);
           this.notifier.error(toProblem(error).message);
+        },
+      });
+  }
+
+  /**
+   * A látott hét munkaidejét a következő hetekre másolja, hetente külön kéréssel. Ütközésnél
+   * megáll: a már átmásolt hetek megmaradnak, és az üzenet megmondja, melyik hétnél akadt el.
+   */
+  protected repeatWeek(): void {
+    const source = this.targetWeek();
+    const barberId = this.context.barberId();
+    if (source === null || barberId === null) {
+      return;
+    }
+    const targets = Array.from({ length: REPEAT_WEEKS }, (_, index) =>
+      shiftDate(source, 7 * (index + 1)),
+    );
+    let done = 0;
+    let current = targets[0];
+    confirmAction(this.dialog, {
+      title: `Ismétlés ${REPEAT_WEEKS} hétre`,
+      message:
+        `A látott hét (${weekLabel(source)}) munkaidő-sávjai a következő ${REPEAT_WEEKS} hétre ` +
+        `(${weeksLabel(targets[0], REPEAT_WEEKS)}) kerülnek, ugyanarra a napra és órára. ` +
+        'Ha egy héten ütközés van, ott megáll; a már átmásolt hetek megmaradnak.',
+      confirmLabel: 'Ismétlés',
+    })
+      .pipe(
+        filter((confirmed) => confirmed),
+        tap(() => this.copying.set(true)),
+        switchMap(() => from(targets)),
+        concatMap((target) => {
+          current = target;
+          return this.schedule.copyWeek(barberId, source, target).pipe(tap(() => done++));
+        }),
+      )
+      .subscribe({
+        complete: () => {
+          this.copying.set(false);
+          if (done > 0) {
+            this.notifier.info(`A hét munkaideje átmásolva a következő ${done} hétre.`);
+            this.refresh();
+          }
+        },
+        error: (error: unknown) => {
+          this.copying.set(false);
+          const prefix = done > 0 ? `${done} hét kész. ` : '';
+          this.notifier.error(
+            `${prefix}A ${weekLabel(current)} közötti hétnél elakadt: ${toProblem(error).message}`,
+          );
+          this.refresh();
         },
       });
   }

@@ -166,6 +166,11 @@ export class BookingPage {
 
   constructor() {
     this.pending = readPendingSelection(this.route.snapshot.queryParamMap);
+    if (this.pending?.serviceId === null) {
+      this.notice.set(
+        'Válaszd ki a szolgáltatást: utána a naptárban kijelölt borbély és időpont lesz kiválasztva.',
+      );
+    }
 
     this.catalog
       .services()
@@ -176,7 +181,8 @@ export class BookingPage {
           const wanted = services.find((service) => service.id === this.pending?.serviceId);
           if (wanted) {
             this.selectService(wanted, true);
-          } else {
+          } else if (this.pending?.serviceId !== null) {
+            // A naptárból érkező előválasztás (serviceId: null) megmarad a szolgáltatás választásáig.
             this.pending = null;
           }
         },
@@ -210,7 +216,12 @@ export class BookingPage {
   }
 
   protected selectService(service: ServiceOffering, restoring = false): void {
-    this.startSelection(restoring);
+    // A naptárból érkező előválasztás (borbély, nap, időpont) a szolgáltatás kiválasztása után érvényesül.
+    const preset = !restoring && this.pending !== null && this.pending.serviceId === null;
+    this.startSelection(restoring || preset);
+    if (preset) {
+      this.notice.set(null);
+    }
     this.service.set(service);
     this.resetFrom(1);
     this.syncUrl();
@@ -230,6 +241,11 @@ export class BookingPage {
           if (wanted) {
             this.selectBarber(wanted, true);
           } else {
+            if (this.pending?.barberId) {
+              this.notice.set(
+                'A választott borbély ezt a szolgáltatást nem vállalja, válassz mást.',
+              );
+            }
             this.pending = null;
           }
         },
@@ -262,7 +278,7 @@ export class BookingPage {
             return;
           }
           if (wanted) {
-            this.notice.set('A korábban választott nap már nem foglalható, válassz másikat.');
+            this.notice.set('A választott nap nem foglalható, válassz másikat.');
             this.pending = null;
           }
           // A legkorábbi szabad nap legyen kiválasztva, hogy rögtön látszódjanak az időpontok.
@@ -300,7 +316,9 @@ export class BookingPage {
             if (match) {
               this.selectSlot(match, true);
             } else {
-              this.notice.set('A korábban választott időpont közben elkelt, válassz másikat.');
+              this.notice.set(
+                'A választott időpont már nem szabad, vagy nem fér bele a szolgáltatás. Válassz másikat.',
+              );
             }
           }
           this.pending = null;

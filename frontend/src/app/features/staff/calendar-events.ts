@@ -181,8 +181,13 @@ const shortDayFormat = new Intl.DateTimeFormat('hu-HU', {
 
 /** A hétfőtől vasárnapig tartó hét: "nov. 23. – nov. 29." */
 export function weekLabel(monday: string): string {
+  return weeksLabel(monday, 1);
+}
+
+/** Egymást követő hetek a hétfőtől az utolsó vasárnapig: "nov. 30. – dec. 27." */
+export function weeksLabel(firstMonday: string, weeks: number): string {
   const day = (date: string) => shortDayFormat.format(new Date(`${date}T00:00:00Z`));
-  return `${day(monday)} – ${day(shiftDate(monday, 6))}`;
+  return `${day(firstMonday)} – ${day(shiftDate(firstMonday, 7 * weeks - 1))}`;
 }
 
 /** "november 24., kedd, 09:00–12:00", több napon át: "november 24., kedd 12:00 – november 26., csütörtök 18:00" */

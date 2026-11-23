@@ -6,10 +6,12 @@ import { isIsoDate } from '../../core/time/local-date';
 /**
  * A címsorban megőrzött választás (?serviceId=1&barberId=2&date=2026-12-01&startAt=…).
  * Így a tölcsér belépés vagy oldalfrissítés után ugyanott folytatódik, és a hivatkozás
- * meg is osztható.
+ * meg is osztható. Szolgáltatás nélkül (?barberId=2&date=…&startAt=…) a naptárból érkező
+ * előválasztás: a borbély, a nap és az időpont a szolgáltatás kiválasztása után érvényesül.
  */
 export interface PendingSelection {
-  serviceId: number;
+  /** null: előválasztás a naptárból, a szolgáltatást még választani kell. */
+  serviceId: number | null;
   barberId: number | null;
   date: string | null;
   startAt: string | null;
@@ -17,13 +19,15 @@ export interface PendingSelection {
 
 export function readPendingSelection(params: ParamMap): PendingSelection | null {
   const serviceId = toId(params.get('serviceId'));
-  if (serviceId === null) {
+  const barberId = toId(params.get('barberId'));
+  // Szolgáltatás és borbély nélkül nincs mit visszaállítani.
+  if (serviceId === null && barberId === null) {
     return null;
   }
   const date = params.get('date');
   return {
     serviceId,
-    barberId: toId(params.get('barberId')),
+    barberId,
     date: isIsoDate(date) ? date : null,
     startAt: params.get('startAt'),
   };

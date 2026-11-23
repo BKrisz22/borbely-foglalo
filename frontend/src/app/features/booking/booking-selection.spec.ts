@@ -26,10 +26,25 @@ describe('readPendingSelection', () => {
     });
   });
 
-  it('szolgáltatás nélkül nincs mit visszaállítani', () => {
-    expect(readPendingSelection(convertToParamMap({ barberId: '2' }))).toBeNull();
+  it('szolgáltatás és borbély nélkül nincs mit visszaállítani', () => {
+    expect(readPendingSelection(convertToParamMap({}))).toBeNull();
+    expect(readPendingSelection(convertToParamMap({ date: '2026-12-01' }))).toBeNull();
     expect(readPendingSelection(convertToParamMap({ serviceId: 'abc' }))).toBeNull();
     expect(readPendingSelection(convertToParamMap({ serviceId: '-3' }))).toBeNull();
+  });
+
+  it('a naptárból érkező előválasztásban még nincs szolgáltatás', () => {
+    const params = convertToParamMap({
+      barberId: '2',
+      date: '2026-12-01',
+      startAt: '2026-12-01T10:00:00+01:00',
+    });
+    expect(readPendingSelection(params)).toEqual({
+      serviceId: null,
+      barberId: 2,
+      date: '2026-12-01',
+      startAt: '2026-12-01T10:00:00+01:00',
+    });
   });
 
   it('a hibás részeket elhagyja', () => {
