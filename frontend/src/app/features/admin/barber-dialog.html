@@ -1,0 +1,97 @@
+<h2 mat-dialog-title>{{ barber ? barber.fullName + ' adatai' : 'Új borbély' }}</h2>
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <mat-dialog-content>
+    @if (error(); as message) {
+      <div class="form-error" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ message }}</span>
+      </div>
+    }
+
+    @if (!barber) {
+      <mat-form-field class="full">
+        <mat-label>E-mail-cím</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="off" cdkFocusInitial />
+        <mat-hint>Ezzel lép be.</mat-hint>
+        <mat-error>{{ errorMessage(form.controls.email, messages.email) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="full" subscriptSizing="dynamic">
+        <mat-label>Kezdőjelszó</mat-label>
+        <input matInput formControlName="initialPassword" autocomplete="off" spellcheck="false" />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          matTooltip="Másolás"
+          aria-label="Kezdőjelszó másolása"
+          [cdkCopyToClipboard]="form.controls.initialPassword.value"
+        >
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          matTooltip="Új jelszó"
+          aria-label="Új kezdőjelszó"
+          (click)="newPassword()"
+        >
+          <mat-icon>autorenew</mat-icon>
+        </button>
+        <mat-hint
+          >Add át a borbélynak; az első belépéskor le kell cserélnie. {{ passwordHint }}</mat-hint
+        >
+        <mat-error>{{ errorMessage(form.controls.initialPassword) }}</mat-error>
+      </mat-form-field>
+    }
+
+    <mat-form-field class="full">
+      <mat-label>Név</mat-label>
+      <input matInput formControlName="fullName" [maxlength]="nameMax" />
+      <mat-error>{{ errorMessage(form.controls.fullName, messages.fullName) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full">
+      <mat-label>Bemutatkozás (nem kötelező)</mat-label>
+      <textarea matInput formControlName="bio" rows="3" [maxlength]="bioMax"></textarea>
+      <mat-hint align="end">{{ form.controls.bio.value.length }} / {{ bioMax }}</mat-hint>
+      <mat-error>{{ errorMessage(form.controls.bio, messages.bio) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full" subscriptSizing="dynamic">
+      <mat-label>Foglalási határidő</mat-label>
+      <mat-select formControlName="minLeadMinutes">
+        @for (minutes of leadOptions; track minutes) {
+          <mat-option [value]="minutes">{{ leadTimeLabel(minutes) }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Legalább ennyivel a kezdés előtt foglalhat a vendég.</mat-hint>
+    </mat-form-field>
+
+    <fieldset class="services">
+      <legend>Vállalt szolgáltatások</legend>
+      @for (service of serviceChoices; track service.id) {
+        <mat-checkbox
+          [checked]="selected().has(service.id)"
+          (change)="toggle(service.id, $event.checked)"
+        >
+          {{ service.name }}
+          @if (!service.active) {
+            <span class="muted">(kivezetve)</span>
+          }
+        </mat-checkbox>
+      } @empty {
+        <p class="muted">
+          Még nincs szolgáltatás; előbb a Szolgáltatások oldalon vegyél fel egyet.
+        </p>
+      }
+    </fieldset>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Mégse</button>
+    <button matButton="filled" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Mentés…' : barber ? 'Mentés' : 'Felvétel' }}
+    </button>
+  </mat-dialog-actions>
+</form>

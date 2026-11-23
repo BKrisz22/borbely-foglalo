@@ -15,14 +15,15 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import java.nio.charset.StandardCharsets;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * A borbély saját profiljának tesztjei: a borbély a sajátját módosíthatja, a másikét nem,
- * a tulajdonos bárkiét; a vendég egyiket sem.
+ * A borbély saját profiljának tesztjei: a borbély a sajátját látja teljes adatokkal és módosíthatja,
+ * a másikét nem, a tulajdonos bárkiét; a vendég egyiket sem.
  */
 @IntegrationTest
 class BarberProfileApiTests {
@@ -53,6 +54,24 @@ class BarberProfileApiTests {
                 .andExpect(jsonPath("$.bio").value("Klasszikus vágások."))
                 .andExpect(jsonPath("$.minLeadMinutes").value(30))
                 .andExpect(jsonPath("$.fullName").value("Kovács Péter"));
+    }
+
+    @Test
+    void aBarberSeesTheirOwnFullDetailsButOnlyThePublicDataOfOthers() throws Exception {
+        mockMvc.perform(get("/api/barbers/{id}", 1).header("Authorization", "Bearer " + barberToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("kovacs.peter@example.com"))
+                .andExpect(jsonPath("$.minLeadMinutes").value(60));
+
+        mockMvc.perform(get("/api/barbers/{id}", 2).header("Authorization", "Bearer " + barberToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fullName").value("Szabó Anna"))
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.minLeadMinutes").doesNotExist());
+
+        mockMvc.perform(get("/api/barbers/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.minLeadMinutes").doesNotExist());
     }
 
     @Test

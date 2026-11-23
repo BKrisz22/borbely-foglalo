@@ -6,6 +6,7 @@ import hu.szakdolgozat.borbely.barber.dto.BarberPublicResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberResponse;
 import hu.szakdolgozat.borbely.barber.dto.BarberServicesRequest;
 import hu.szakdolgozat.borbely.barber.dto.BarberUpdateRequest;
+import hu.szakdolgozat.borbely.barber.dto.BarberView;
 import hu.szakdolgozat.borbely.common.ConflictException;
 import hu.szakdolgozat.borbely.common.NotFoundException;
 import hu.szakdolgozat.borbely.security.Authentications;
@@ -67,19 +68,20 @@ public class BarberService {
                 .toList();
     }
 
-    /** Egy aktív borbély nyilvános adatai; kikapcsolt borbélynál 404, mintha nem is létezne. */
+    /**
+     * Egy borbély a kérő szerint: a tulajdonos és maga a borbély a teljes adatokat kapja, más
+     * csak egy aktív borbély nyilvános adatait; kikapcsolt borbélynál 404, mintha nem is létezne.
+     */
     @Transactional(readOnly = true)
-    public BarberPublicResponse getPublic(Long id) {
+    public BarberView getFor(Long id, Authentication authentication) {
         Barber barber = find(id);
+        if (Authentications.isOwner(authentication) || isOwnProfile(barber, authentication)) {
+            return BarberResponse.from(barber);
+        }
         if (!barber.isActive()) {
             throw new NotFoundException("Nincs ilyen borbély: " + id);
         }
         return BarberPublicResponse.from(barber);
-    }
-
-    @Transactional(readOnly = true)
-    public BarberResponse get(Long id) {
-        return BarberResponse.from(find(id));
     }
 
     @Transactional
@@ -125,8 +127,7 @@ public class BarberService {
     @Transactional
     public BarberResponse updateProfile(Long id, BarberProfileRequest request, Authentication authentication) {
         Barber barber = find(id);
-        if (!Authentications.isOwner(authentication)
-                && !barber.getUser().getId().equals(Authentications.userId(authentication))) {
+        if (!Authentications.isOwner(authentication) && !isOwnProfile(barber, authentication)) {
             throw new AccessDeniedException("Csak a saját profilodat módosíthatod.");
         }
         barber.setBio(blankToNull(request.bio()));
@@ -146,6 +147,11 @@ public class BarberService {
     @Transactional
     public void deactivate(Long id) {
         find(id).setActive(false);
+    }
+
+    /** A bejelentkezett felhasználó maga ez a borbély-e (névtelen kérésnél nem). */
+    private static boolean isOwnProfile(Barber barber, Authentication authentication) {
+        return barber.getUser().getId().equals(Authentications.userId(authentication));
     }
 
     /** Szolgáltatás szerinti szűrés, majd névsor a magyar ábécé szerint ({@link Collator}). */

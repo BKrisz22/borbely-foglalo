@@ -79,37 +79,24 @@ export const routes: Routes = [
         canActivate: [roleGuard('BARBER', 'OWNER')],
         loadComponent: () => import('./features/staff/schedule-page').then((m) => m.SchedulePage),
       },
-      comingSoon(
-        'profil',
-        'Profilom',
-        'badge',
-        [
-          'Bemutatkozás szerkesztése (ez látszik a foglalásnál)',
-          'Foglalási határidő: legalább hány perccel a kezdés előtt lehet foglalni',
-        ],
-        [roleGuard('BARBER')],
-      ),
-      comingSoon(
-        'szolgaltatasok',
-        'Szolgáltatások',
-        'content_cut',
-        [
-          'Szolgáltatások felvétele és módosítása (név, időtartam, ár)',
-          'Kivezetés: a korábbi foglalások megmaradnak',
-        ],
-        [roleGuard('OWNER')],
-      ),
-      comingSoon(
-        'borbelyok',
-        'Borbélyok',
-        'groups',
-        [
-          'Borbély felvétele kezdőjelszóval; első belépéskor kötelező a jelszócsere',
-          'A vállalt szolgáltatások beállítása',
-          'Kikapcsolás és visszakapcsolás',
-        ],
-        [roleGuard('OWNER')],
-      ),
+      {
+        path: 'profil',
+        title: 'Profilom',
+        canActivate: [roleGuard('BARBER')],
+        loadComponent: () => import('./features/profile/profile-page').then((m) => m.ProfilePage),
+      },
+      {
+        path: 'szolgaltatasok',
+        title: 'Szolgáltatások',
+        canActivate: [roleGuard('OWNER')],
+        loadComponent: () => import('./features/admin/services-page').then((m) => m.ServicesPage),
+      },
+      {
+        path: 'borbelyok',
+        title: 'Borbélyok',
+        canActivate: [roleGuard('OWNER')],
+        loadComponent: () => import('./features/admin/barbers-page').then((m) => m.BarbersPage),
+      },
       comingSoon(
         'penzugyek',
         'Pénzügyek',

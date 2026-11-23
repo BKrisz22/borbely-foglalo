@@ -49,10 +49,13 @@ public class BarberController {
         return barbers.listPublic(serviceId);
     }
 
-    /** Egy borbély: a tulajdonosnak a teljes adatok, másnak csak az aktív borbély nyilvános adatai. */
+    /**
+     * Egy borbély: a tulajdonos és maga a borbély a teljes adatokat kapja (így a borbély a profiloldalon
+     * a saját foglalási határidejét is látja), más csak az aktív borbély nyilvános adatait.
+     */
     @GetMapping("/{id}")
     public BarberView get(@PathVariable("id") Long id, Authentication authentication) {
-        return Authentications.isOwner(authentication) ? barbers.get(id) : barbers.getPublic(id);
+        return barbers.getFor(id, authentication);
     }
 
     @PostMapping

@@ -58,4 +58,9 @@ export class StaffBarberContext {
   select(barberId: number): void {
     this.chosen.set(barberId);
   }
+
+  /** A borbélyok listája megváltozott (felvétel, kikapcsolás): a következő load() újratölti. */
+  invalidate(): void {
+    this.barbers.set(null);
+  }
 }

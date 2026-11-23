@@ -1,0 +1,83 @@
+<div class="page">
+  <div class="head">
+    <h1 class="page-title">Borbélyok</h1>
+    <button matButton="filled" type="button" (click)="add()">
+      <mat-icon>person_add</mat-icon>
+      Új borbély
+    </button>
+  </div>
+  <p class="page-lead">
+    Az új borbély kezdőjelszóval lép be először, és rögtön sajátot kell megadnia. A munkaidejét a
+    Beosztás oldalon állíthatja be ő vagy te.
+  </p>
+
+  @if (error(); as message) {
+    <div class="form-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+
+  @if (barbers(); as barbers) {
+    <mat-card appearance="outlined" class="list">
+      @for (barber of barbers; track barber.id) {
+        <div class="row" [class.inactive]="!barber.active">
+          <div class="main">
+            <div class="title">
+              <span class="name">{{ barber.fullName }}</span>
+              @if (!barber.active) {
+                <span class="badge">Kikapcsolva</span>
+              } @else if (barber.services.length === 0) {
+                <span class="badge warning">Nincs szolgáltatása, nem foglalható</span>
+              }
+            </div>
+            <span class="muted detail">{{ barber.email }}</span>
+            @if (barber.services.length > 0) {
+              <span class="detail">{{ serviceNames(barber) }}</span>
+            }
+          </div>
+          <div class="meta">Foglalási határidő: {{ leadTimeLabel(barber.minLeadMinutes) }}</div>
+          <div class="row-actions">
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Módosítás"
+              [attr.aria-label]="barber.fullName + ' adatainak módosítása'"
+              [disabled]="busy() === barber.id"
+              (click)="edit(barber)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            @if (barber.active) {
+              <button
+                mat-icon-button
+                type="button"
+                matTooltip="Kikapcsolás"
+                [attr.aria-label]="barber.fullName + ' kikapcsolása'"
+                [disabled]="busy() === barber.id"
+                (click)="deactivate(barber)"
+              >
+                <mat-icon>person_off</mat-icon>
+              </button>
+            } @else {
+              <button
+                mat-icon-button
+                type="button"
+                matTooltip="Visszakapcsolás"
+                [attr.aria-label]="barber.fullName + ' visszakapcsolása'"
+                [disabled]="busy() === barber.id"
+                (click)="reactivate(barber)"
+              >
+                <mat-icon>how_to_reg</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="empty muted">Még nincs borbély. Vedd fel az elsőt!</p>
+      }
+    </mat-card>
+  } @else if (!error()) {
+    <div class="center-spinner"><mat-spinner diameter="40" /></div>
+  }
+</div>

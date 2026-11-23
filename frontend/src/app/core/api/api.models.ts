@@ -48,6 +48,15 @@ export interface ServiceOffering {
   active: boolean;
 }
 
+/** Szolgáltatás felvétele vagy módosítása (tulajdonos); az active: true visszaveszi a kivezetettet. */
+export interface ServiceOfferingRequest {
+  name: string;
+  description: string | null;
+  durationMinutes: number;
+  priceHuf: number;
+  active?: boolean;
+}
+
 /** A borbély nyilvános adatai; bejelentkezés nélkül és a nem tulajdonos szerepkörök ezt kapják. */
 export interface BarberPublic {
   id: number;
@@ -61,6 +70,30 @@ export interface BarberDetails extends BarberPublic {
   userId: number;
   email: string;
   active: boolean;
+  minLeadMinutes: number;
+}
+
+/** Új borbély (tulajdonos); a kezdőjelszót az első belépéskor le kell cserélnie. */
+export interface BarberCreateRequest {
+  email: string;
+  fullName: string;
+  initialPassword: string;
+  bio: string | null;
+  minLeadMinutes: number;
+  serviceIds: number[];
+}
+
+/** A borbély adatainak módosítása (tulajdonos); az active: true visszakapcsolja. */
+export interface BarberUpdateRequest {
+  fullName: string;
+  bio: string | null;
+  minLeadMinutes: number;
+  active?: boolean;
+}
+
+/** A borbély saját profilja: bemutatkozás és foglalási határidő (0–1440 perc). */
+export interface BarberProfileRequest {
+  bio: string | null;
   minLeadMinutes: number;
 }
 

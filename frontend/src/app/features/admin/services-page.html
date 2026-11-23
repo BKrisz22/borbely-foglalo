@@ -1,0 +1,83 @@
+<div class="page">
+  <div class="head">
+    <h1 class="page-title">Szolgáltatások</h1>
+    <button matButton="filled" type="button" (click)="add()">
+      <mat-icon>add</mat-icon>
+      Új szolgáltatás
+    </button>
+  </div>
+  <p class="page-lead">
+    A vendégek az aktív szolgáltatások közül foglalhatnak. Hogy ki melyiket vállalja, a Borbélyok
+    oldalon állíthatod be.
+  </p>
+
+  @if (error(); as message) {
+    <div class="form-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+
+  @if (services(); as services) {
+    <mat-card appearance="outlined" class="list">
+      @for (service of services; track service.id) {
+        <div class="row" [class.inactive]="!service.active">
+          <div class="main">
+            <div class="title">
+              <span class="name">{{ service.name }}</span>
+              @if (!service.active) {
+                <span class="badge">Kivezetve</span>
+              }
+            </div>
+            @if (service.description) {
+              <span class="muted detail">{{ service.description }}</span>
+            }
+          </div>
+          <div class="meta">
+            {{ service.durationMinutes }} perc ·
+            {{ service.priceHuf | currency: 'HUF' : 'symbol' : '1.0-0' }}
+          </div>
+          <div class="row-actions">
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Módosítás"
+              [attr.aria-label]="service.name + ' módosítása'"
+              [disabled]="busy() === service.id"
+              (click)="edit(service)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            @if (service.active) {
+              <button
+                mat-icon-button
+                type="button"
+                matTooltip="Kivezetés"
+                [attr.aria-label]="service.name + ' kivezetése'"
+                [disabled]="busy() === service.id"
+                (click)="deactivate(service)"
+              >
+                <mat-icon>archive</mat-icon>
+              </button>
+            } @else {
+              <button
+                mat-icon-button
+                type="button"
+                matTooltip="Visszavétel"
+                [attr.aria-label]="service.name + ' visszavétele'"
+                [disabled]="busy() === service.id"
+                (click)="reactivate(service)"
+              >
+                <mat-icon>unarchive</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="empty muted">Még nincs szolgáltatás. Vedd fel az elsőt!</p>
+      }
+    </mat-card>
+  } @else if (!error()) {
+    <div class="center-spinner"><mat-spinner diameter="40" /></div>
+  }
+</div>
