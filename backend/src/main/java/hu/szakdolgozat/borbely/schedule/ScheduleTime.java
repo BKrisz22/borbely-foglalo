@@ -50,6 +50,11 @@ public class ScheduleTime {
         return date.atStartOfDay(zone).toInstant();
     }
 
+    /** Melyik helyi napra esik egy időpont. */
+    public LocalDate localDate(Instant instant) {
+        return LocalDate.ofInstant(instant, zone);
+    }
+
     /** Egy időpont helyi idő szerint (például a 08:15Z télen 9:15). */
     public LocalTime localTime(Instant instant) {
         return LocalTime.ofInstant(instant, zone);

@@ -72,7 +72,7 @@ public class SlotService {
             return List.of();
         }
         Window window = load(barberId, date, date);
-        return startsOn(barber, service, date, window).stream()
+        return startsOn(barber, service, date, window, earliestStart(barber)).stream()
                 .map(start -> new SlotResponse(start, time.localTime(start)))
                 .toList();
     }
@@ -93,17 +93,35 @@ public class SlotService {
             return List.of();
         }
         Window window = load(barberId, first, last);
+        Instant earliest = earliestStart(barber);
         List<LocalDate> days = new ArrayList<>();
         for (LocalDate day = first; !day.isAfter(last); day = day.plusDays(1)) {
-            if (!startsOn(barber, service, day, window).isEmpty()) {
+            if (!startsOn(barber, service, day, window, earliest).isEmpty()) {
                 days.add(day);
             }
         }
         return days;
     }
 
-    /** Egy nap foglalható kezdőpontjai UTC-ben. */
-    private List<Instant> startsOn(Barber barber, ServiceOffering service, LocalDate date, Window window) {
+    /**
+     * Foglalható-e most a megadott kezdőpont: a foglalási ablakon belüli napra esik, és a
+     * slot-algoritmus is felkínálná. A vendég saját foglalásánál a borbély foglalási határideje is
+     * számít ({@code applyLeadTime}); a borbély vagy a tulajdonos, például telefonos foglalásnál,
+     * a kezdésig felvehet foglalást. A foglalás tranzakciójában fut, ezért nem nyit sajátot.
+     */
+    public boolean isBookableStart(Barber barber, ServiceOffering service, Instant startAt, boolean applyLeadTime) {
+        LocalDate date = time.localDate(startAt);
+        LocalDate today = time.today();
+        if (date.isBefore(today) || date.isAfter(lastBookableDay(today))) {
+            return false;
+        }
+        Instant earliest = applyLeadTime ? earliestStart(barber) : time.now();
+        return startsOn(barber, service, date, load(barber.getId(), date, date), earliest).contains(startAt);
+    }
+
+    /** Egy nap foglalható kezdőpontjai UTC-ben; a legkorábbi elfogadott kezdés {@code earliest}. */
+    private List<Instant> startsOn(Barber barber, ServiceOffering service, LocalDate date, Window window,
+                                   Instant earliest) {
         List<Availability> open = window.availability().getOrDefault(date, List.of());
         if (open.isEmpty()) {
             return List.of();
@@ -123,7 +141,6 @@ public class SlotService {
         }
 
         int k = SlotGrid.slotsNeeded(service.getDurationMinutes());
-        Instant earliest = time.now().plus(Duration.ofMinutes(barber.getMinLeadMinutes()));
         return finder.findStarts(grid.free(), k).stream()
                 .map(index -> time.toInstant(date, SlotGrid.startOf(index)))
                 .filter(start -> !start.isBefore(earliest))
@@ -163,18 +180,24 @@ public class SlotService {
                 timeOffs.findOverlapping(barberId, from, to));
     }
 
+    /** A vendég legkorábban ennyi idő múlva kezdődő időpontot foglalhat: most + a borbély foglalási határideje. */
+    private Instant earliestStart(Barber barber) {
+        return time.now().plus(Duration.ofMinutes(barber.getMinLeadMinutes()));
+    }
+
     private LocalDate lastBookableDay(LocalDate today) {
         return today.plusDays(properties.bookingHorizonDays());
     }
 
     /** A kikapcsolt borbély a vendégnek nem létezik, ahogy a nyilvános borbélylistában sem. */
-    private Barber requireActiveBarber(Long barberId) {
+    public Barber requireActiveBarber(Long barberId) {
         return barbers.findWithDetailsById(barberId)
                 .filter(Barber::isActive)
                 .orElseThrow(() -> new NotFoundException("Nincs ilyen borbély: " + barberId));
     }
 
-    private static ServiceOffering requireOffered(Barber barber, Long serviceId) {
+    /** A borbély által vállalt, aktív szolgáltatás; ha nincs ilyen, 400. */
+    public static ServiceOffering requireOffered(Barber barber, Long serviceId) {
         return barber.getServices().stream()
                 .filter(service -> service.getId().equals(serviceId) && service.isActive())
                 .findFirst()

@@ -21,4 +21,7 @@ public interface BarberRepository extends JpaRepository<Barber, Long> {
 
     @EntityGraph(attributePaths = {"user", "services"})
     Optional<Barber> findWithDetailsById(Long id);
+
+    /** A felhasználóhoz tartozó borbélyprofil (a borbély saját naptárához). */
+    Optional<Barber> findByUserId(Long userId);
 }

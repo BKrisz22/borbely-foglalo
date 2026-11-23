@@ -1,5 +1,6 @@
 package hu.szakdolgozat.borbely.security;
 
+import hu.szakdolgozat.borbely.user.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -16,6 +17,14 @@ public final class Authentications {
         return authentication != null
                 && authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_OWNER".equals(authority.getAuthority()));
+    }
+
+    /** Igaz, ha a kérés a megadott szerepkörrel hitelesített; névtelen kérésnél hamis. */
+    public static boolean hasRole(Authentication authentication, Role role) {
+        String expected = "ROLE_" + role.name();
+        return authentication != null
+                && authentication.getAuthorities().stream()
+                .anyMatch(authority -> expected.equals(authority.getAuthority()));
     }
 
     /**

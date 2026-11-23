@@ -26,3 +26,5 @@ app:
   schedule:
     zone: Europe/Budapest
     booking-horizon-days: 30
+  booking:
+    cancel-deadline: PT24H
