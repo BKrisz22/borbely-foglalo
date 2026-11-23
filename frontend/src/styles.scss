@@ -46,6 +46,23 @@ a {
   );
 }
 
+// FullCalendar (monarch téma) a Material-téma színeivel; a paletta többi értéke a blue.css-ből jön.
+:root {
+  --fc-monarch-primary: var(--mat-sys-primary);
+  --fc-monarch-primary-foreground: var(--mat-sys-on-primary);
+  --fc-monarch-secondary: var(--mat-sys-secondary-container);
+  --fc-monarch-secondary-foreground: var(--mat-sys-on-secondary-container);
+  // A mai nap jelölése a kiegészítő (narancs) színnel.
+  --fc-monarch-tertiary: var(--mat-sys-tertiary);
+  --fc-monarch-tertiary-foreground: var(--mat-sys-on-tertiary);
+  --fc-monarch-selected: var(--mat-sys-primary);
+  --fc-monarch-selected-foreground: var(--mat-sys-on-primary);
+  --fc-monarch-now: var(--mat-sys-error);
+  --fc-monarch-background: var(--mat-sys-surface);
+  --fc-monarch-foreground: var(--mat-sys-on-surface);
+  --fc-monarch-border: var(--mat-sys-outline-variant);
+}
+
 // Közös oldalelrendezés.
 .page {
   box-sizing: border-box;

@@ -67,29 +67,18 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/my-bookings/my-bookings-page').then((m) => m.MyBookingsPage),
       },
-      comingSoon(
-        'naptar',
-        'Naptár',
-        'calendar_month',
-        [
-          'Heti és napi nézet (FullCalendar): foglalások, munkaidő és távollétek egy helyen',
-          'Telefonos foglalás vendég nevében, vendégkeresővel',
-          'Foglalás lezárása: megjelent, nem jelent meg, lemondva',
-          'A tulajdonos az összes borbély naptárát látja',
-        ],
-        [roleGuard('BARBER', 'OWNER')],
-      ),
-      comingSoon(
-        'beosztas',
-        'Beosztás',
-        'schedule',
-        [
-          'Munkaidő-sávok felvétele 15 perces pontossággal',
-          'Távollétek (szabadság, betegség)',
-          'Az előző hét másolása egy kattintással',
-        ],
-        [roleGuard('BARBER', 'OWNER')],
-      ),
+      {
+        path: 'naptar',
+        title: 'Naptár',
+        canActivate: [roleGuard('BARBER', 'OWNER')],
+        loadComponent: () => import('./features/staff/calendar-page').then((m) => m.CalendarPage),
+      },
+      {
+        path: 'beosztas',
+        title: 'Beosztás',
+        canActivate: [roleGuard('BARBER', 'OWNER')],
+        loadComponent: () => import('./features/staff/schedule-page').then((m) => m.SchedulePage),
+      },
       comingSoon(
         'profil',
         'Profilom',

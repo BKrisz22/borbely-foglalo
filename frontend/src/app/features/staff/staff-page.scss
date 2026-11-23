@@ -1,0 +1,83 @@
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+
+  &.booked {
+    background: var(--mat-sys-primary);
+  }
+
+  &.completed {
+    background: var(--mat-sys-secondary);
+  }
+
+  &.no-show {
+    background: var(--mat-sys-error);
+  }
+
+  // A háttéresemények a FullCalendarban halványan (15%) jelennek meg; a jelmagyarázat is így.
+  &.availability {
+    background: color-mix(in oklab, var(--mat-sys-primary) 15%, transparent);
+    outline: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  &.time-off {
+    background: color-mix(in oklab, var(--mat-sys-error) 15%, transparent);
+    outline: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  &.availability-block {
+    background: color-mix(in oklab, var(--mat-sys-primary) 14%, transparent);
+    outline: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  &.time-off-block {
+    background: var(--mat-sys-error-container);
+  }
+
+  &.booking-background {
+    background: color-mix(in oklab, var(--mat-sys-on-surface-variant) 15%, transparent);
+    outline: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.hint {
+  margin: 16px 0 0;
+}
+
+full-calendar {
+  display: block;
+}

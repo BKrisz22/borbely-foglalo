@@ -103,9 +103,29 @@ export interface Availability {
   endTime: string;
 }
 
+/** Egy munkaidő-sáv felvétele: helyi nap és idő ("2026-12-01", "09:00", "12:00"). */
+export interface AvailabilitySlotRequest {
+  workDate: string;
+  startTime: string;
+  endTime: string;
+}
+
+/** Egy sáv idejének módosítása; a nap nem változik. */
+export interface AvailabilityUpdateRequest {
+  startTime: string;
+  endTime: string;
+}
+
 export interface TimeOff {
   id: number;
   barberId: number;
+  startAt: string;
+  endAt: string;
+  reason: string | null;
+}
+
+/** Távollét felvétele; az időpontok időzónával ("2026-12-24T09:00:00+01:00"). */
+export interface TimeOffCreateRequest {
   startAt: string;
   endAt: string;
   reason: string | null;

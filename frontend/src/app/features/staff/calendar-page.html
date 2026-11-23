@@ -1,0 +1,40 @@
+<div class="page">
+  <div class="head">
+    <h1 class="page-title">Naptár</h1>
+    <div class="actions">
+      <app-barber-picker />
+      <a matButton="filled" routerLink="/foglalas">
+        <mat-icon>add</mat-icon>
+        Foglalás felvétele
+      </a>
+    </div>
+  </div>
+
+  @if (context.error() ?? error(); as message) {
+    <div class="form-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+  @if (context.isOwner() && context.barbers()?.length === 0) {
+    <div class="form-info">
+      <mat-icon>info</mat-icon>
+      <span>Még nincs aktív borbély, ezért nincs mit mutatni.</span>
+    </div>
+  }
+
+  <ul class="legend" aria-label="Jelmagyarázat">
+    <li><span class="swatch booked"></span>Foglalt</li>
+    <li><span class="swatch completed"></span>Teljesítve</li>
+    <li><span class="swatch no-show"></span>Nem jelent meg</li>
+    <li><span class="swatch availability"></span>Munkaidő</li>
+    <li><span class="swatch time-off"></span>Távollét</li>
+  </ul>
+
+  <full-calendar [options]="options" />
+
+  <p class="muted hint">
+    Kattints egy foglalásra a részletekért: kezdés előtt lemondható, utána lezárható. A munkaidőt és
+    a távolléteket a <a routerLink="/beosztas">Beosztás</a> oldalon állíthatod be.
+  </p>
+</div>

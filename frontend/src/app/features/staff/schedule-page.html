@@ -1,0 +1,40 @@
+<div class="page">
+  <div class="head">
+    <h1 class="page-title">Beosztás</h1>
+    <div class="actions">
+      <app-barber-picker />
+      <button matButton="tonal" type="button" [disabled]="!canCopy()" (click)="copyPreviousWeek()">
+        <mat-icon>content_copy</mat-icon>
+        Előző hét másolása
+      </button>
+    </div>
+  </div>
+
+  @if (context.error() ?? error(); as message) {
+    <div class="form-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+  @if (context.isOwner() && context.barbers()?.length === 0) {
+    <div class="form-info">
+      <mat-icon>info</mat-icon>
+      <span>Még nincs aktív borbély, ezért nincs kinek beosztást készíteni.</span>
+    </div>
+  }
+
+  <ul class="legend" aria-label="Jelmagyarázat">
+    <li><span class="swatch availability-block"></span>Munkaidő</li>
+    <li><span class="swatch time-off-block"></span>Távollét</li>
+    <li><span class="swatch booking-background"></span>Foglalás</li>
+  </ul>
+
+  <full-calendar [options]="options" />
+
+  <p class="muted hint">
+    Húzással jelölj ki egy időszakot (telefonon tartsd rajta az ujjad), és válaszd ki, munkaidő vagy
+    távollét legyen. A munkaidő a napján belül áthúzható, az alja nyújtható; kattintásra törölhető.
+    A foglalásoknak a munkaidőn belül kell maradniuk. A foglalásokat a
+    <a routerLink="/naptar">Naptár</a> oldalon kezelheted.
+  </p>
+</div>

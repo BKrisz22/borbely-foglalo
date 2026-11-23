@@ -27,3 +27,19 @@ export function shopDate(instant: string): string {
 export function shopTime(instant: string): string {
   return timeFormat.format(new Date(instant));
 }
+
+const offsetFormat = new Intl.DateTimeFormat('en-US', {
+  timeZone: SHOP_TIME_ZONE,
+  timeZoneName: 'longOffset',
+});
+
+/**
+ * Az üzlet UTC-eltérése egy helyi napon és órában: "+01:00" télen, "+02:00" nyáron.
+ * A helyi időt UTC-ként értelmezve legfeljebb két órát tévedünk, ami csak az éjszakai
+ * óraátállítás körül számítana, nyitvatartási időben nem.
+ */
+export function shopOffset(date: string, time: string): string {
+  const parts = offsetFormat.formatToParts(new Date(`${date}T${time}:00Z`));
+  const name = parts.find((part) => part.type === 'timeZoneName')?.value ?? 'GMT';
+  return /GMT([+-]\d{2}:\d{2})/.exec(name)?.[1] ?? '+00:00';
+}

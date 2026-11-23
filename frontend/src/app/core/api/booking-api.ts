@@ -42,4 +42,14 @@ export class BookingApi {
   cancel(id: number): Observable<Booking> {
     return this.http.post<Booking>(`/api/bookings/${id}/cancel`, null);
   }
+
+  /** Lezárás a kezdés után: a vendég megjelent (csak a személyzet). */
+  complete(id: number): Observable<Booking> {
+    return this.http.post<Booking>(`/api/bookings/${id}/complete`, null);
+  }
+
+  /** Lezárás a kezdés után: a vendég nem jelent meg (csak a személyzet). */
+  noShow(id: number): Observable<Booking> {
+    return this.http.post<Booking>(`/api/bookings/${id}/no-show`, null);
+  }
 }

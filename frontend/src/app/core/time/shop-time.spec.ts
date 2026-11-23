@@ -1,4 +1,4 @@
-import { shopDate, shopTime } from './shop-time';
+import { shopDate, shopOffset, shopTime } from './shop-time';
 
 describe('shop-time', () => {
   it('télen UTC+1 szerint írja ki az időt', () => {
@@ -13,5 +13,10 @@ describe('shop-time', () => {
     const date = shopDate('2026-11-25T23:30:00Z');
     expect(date).toContain('november 26.');
     expect(date).toContain('csütörtök');
+  });
+
+  it('shopOffset télen +01:00, nyáron +02:00', () => {
+    expect(shopOffset('2026-11-24', '09:00')).toBe('+01:00');
+    expect(shopOffset('2027-07-01', '09:00')).toBe('+02:00');
   });
 });
